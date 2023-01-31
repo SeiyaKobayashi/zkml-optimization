@@ -1,6 +1,7 @@
 # traininig-optimization-on-ml-model-with-zkp
+
 Training Optimization on Neural Networks with ZKP
 
-## Archtecture Diagram
+## Architecture Diagram
 
-![Archtecture Diagram](./docs/arch-diagram.png "archtecture diagram")
+![Architecture Diagram](./docs/arch-diagram.png "architecture diagram")
