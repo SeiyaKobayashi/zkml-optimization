@@ -1,0 +1,167 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "IVerifier",
+  "sourceName": "contracts/src/IVerifier.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "commitmentData",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "commitmentModel",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "commitmentResults",
+          "type": "bytes32"
+        }
+      ],
+      "name": "commit",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "c",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "bytes32",
+                  "name": "value",
+                  "type": "bytes32"
+                }
+              ],
+              "internalType": "struct IVerifier.Node",
+              "name": "node",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "bytes32",
+                  "name": "value",
+                  "type": "bytes32"
+                }
+              ],
+              "internalType": "struct IVerifier.Node[]",
+              "name": "merklePath",
+              "type": "tuple[]"
+            }
+          ],
+          "internalType": "struct IVerifier.MatchedNode[]",
+          "name": "matchedNodes",
+          "type": "tuple[]"
+        }
+      ],
+      "name": "reveal",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "bytes32",
+              "name": "value",
+              "type": "bytes32"
+            }
+          ],
+          "internalType": "struct IVerifier.Node[]",
+          "name": "confirmedNodes",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256[2]",
+              "name": "a",
+              "type": "uint256[2]"
+            },
+            {
+              "internalType": "uint256[2][2]",
+              "name": "b",
+              "type": "uint256[2][2]"
+            },
+            {
+              "internalType": "uint256[2]",
+              "name": "c",
+              "type": "uint256[2]"
+            },
+            {
+              "internalType": "uint256[16]",
+              "name": "input",
+              "type": "uint256[16]"
+            }
+          ],
+          "internalType": "struct IVerifier.Proof[]",
+          "name": "proofs",
+          "type": "tuple[]"
+        }
+      ],
+      "name": "verify",
+      "outputs": [
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "uint256[2]",
+                  "name": "a",
+                  "type": "uint256[2]"
+                },
+                {
+                  "internalType": "uint256[2][2]",
+                  "name": "b",
+                  "type": "uint256[2][2]"
+                },
+                {
+                  "internalType": "uint256[2]",
+                  "name": "c",
+                  "type": "uint256[2]"
+                },
+                {
+                  "internalType": "uint256[16]",
+                  "name": "input",
+                  "type": "uint256[16]"
+                }
+              ],
+              "internalType": "struct IVerifier.Proof",
+              "name": "proof",
+              "type": "tuple"
+            },
+            {
+              "internalType": "bool",
+              "name": "isValid",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct IVerifier.ProofWithValidity[]",
+          "name": "results",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
