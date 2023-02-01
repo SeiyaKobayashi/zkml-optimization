@@ -24,20 +24,37 @@ contract Verifier is IVerifier, Ownable {
     // TODO: add modifiers (if necessary)
 
     // TODO: implement function
+    function registerModel(
+        string calldata modelName,
+        string calldata modelDescription,
+        bytes32 modelCommitment
+    ) external returns (Model memory model) {}
+
+    // TODO: implement function
+    function getModels() external view returns (bytes32[] memory models) {}
+
+    // TODO: implement function
+    function getModelInfo(
+        bytes32 modelCommitment
+    ) external view returns (Model memory model) {}
+
+    // TODO: implement function
     function commit(
-        bytes32 commitmentData,
         bytes32 commitmentModel,
+        bytes32 commitmentData,
         bytes32 commitmentResults
-    ) external returns (bytes32 c) {}
+    ) external returns (uint256 commitmentId, bytes32 challenge) {}
 
     // TODO: implement function
     function reveal(
+        uint256 commitmentId,
         MerkleProof[] calldata merkleProofs
     ) external view returns (Node[] memory verifiedNodes) {}
 
     // TODO: implement function
     function verify(
+        uint256 commitmentId,
         Zkp[] memory zkps
-    ) external returns (ZkpWithValidity[] memory results) {}
+    ) external returns (ZkpWithValidity[] memory zkpVerifications) {}
 }
 /* solhint-enable */
