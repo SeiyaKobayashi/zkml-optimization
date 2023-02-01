@@ -4,7 +4,7 @@ Training Optimization on Neural Networks with ZKP
 
 ## Architecture Diagram
 
-![Architecture Diagram](./docs/arch-diagram.png "architecture diagram")
+![Architecture Diagram](./docs/arch-diagram-v1.png "architecture diagram")
 
 ## Prerequisite
 
