@@ -1,0 +1,277 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "IVerifier",
+  "sourceName": "contracts/src/IVerifier.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "commitmentModel",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "commitmentData",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "commitmentResults",
+          "type": "bytes32"
+        }
+      ],
+      "name": "commit",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "commitmentId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "challenge",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "modelCommitment",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getModelInfo",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "modelName",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "modelDescription",
+              "type": "string"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "modelCommitment",
+              "type": "bytes32"
+            }
+          ],
+          "internalType": "struct IVerifier.Model",
+          "name": "model",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getModels",
+      "outputs": [
+        {
+          "internalType": "bytes32[]",
+          "name": "models",
+          "type": "bytes32[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "modelName",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "modelDescription",
+          "type": "string"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "modelCommitment",
+          "type": "bytes32"
+        }
+      ],
+      "name": "registerModel",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "modelName",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "modelDescription",
+              "type": "string"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "modelCommitment",
+              "type": "bytes32"
+            }
+          ],
+          "internalType": "struct IVerifier.Model",
+          "name": "model",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "commitmentId",
+          "type": "uint256"
+        },
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "bytes32",
+                  "name": "value",
+                  "type": "bytes32"
+                }
+              ],
+              "internalType": "struct IVerifier.Node",
+              "name": "leaf",
+              "type": "tuple"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "bytes32",
+                  "name": "value",
+                  "type": "bytes32"
+                }
+              ],
+              "internalType": "struct IVerifier.Node[]",
+              "name": "proof",
+              "type": "tuple[]"
+            }
+          ],
+          "internalType": "struct IVerifier.MerkleProof[]",
+          "name": "merkleProofs",
+          "type": "tuple[]"
+        }
+      ],
+      "name": "reveal",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "bytes32",
+              "name": "value",
+              "type": "bytes32"
+            }
+          ],
+          "internalType": "struct IVerifier.Node[]",
+          "name": "verifiedNodes",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "commitmentId",
+          "type": "uint256"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256[2]",
+              "name": "a",
+              "type": "uint256[2]"
+            },
+            {
+              "internalType": "uint256[2][2]",
+              "name": "b",
+              "type": "uint256[2][2]"
+            },
+            {
+              "internalType": "uint256[2]",
+              "name": "c",
+              "type": "uint256[2]"
+            },
+            {
+              "internalType": "uint256[16]",
+              "name": "input",
+              "type": "uint256[16]"
+            }
+          ],
+          "internalType": "struct IVerifier.Zkp[]",
+          "name": "zkps",
+          "type": "tuple[]"
+        }
+      ],
+      "name": "verify",
+      "outputs": [
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "uint256[2]",
+                  "name": "a",
+                  "type": "uint256[2]"
+                },
+                {
+                  "internalType": "uint256[2][2]",
+                  "name": "b",
+                  "type": "uint256[2][2]"
+                },
+                {
+                  "internalType": "uint256[2]",
+                  "name": "c",
+                  "type": "uint256[2]"
+                },
+                {
+                  "internalType": "uint256[16]",
+                  "name": "input",
+                  "type": "uint256[16]"
+                }
+              ],
+              "internalType": "struct IVerifier.Zkp",
+              "name": "zkp",
+              "type": "tuple"
+            },
+            {
+              "internalType": "bool",
+              "name": "isValid",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct IVerifier.ZkpWithValidity[]",
+          "name": "zkpVerifications",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

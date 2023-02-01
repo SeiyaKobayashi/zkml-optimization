@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+yarn workspace contracts compile
+yarn workspace contracts lint
+yarn workspace contracts prettify
+yarn workspace contracts test
