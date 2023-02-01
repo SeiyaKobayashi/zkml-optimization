@@ -12,24 +12,24 @@ interface IVerifier {
     }
 
     /// @dev Holds hash value of the matched node and hash values of its Merkle path (to calculate root hash)
-    struct MatchedNode {
+    struct MerkleProof {
         Node node;
         Node[] merklePath;
     }
 
-    // TODO: check exect types
+    // TODO: check exact types
     /// @dev Holds ZKP
-    struct Proof {
+    struct Zkp {
         uint256[2] a;
         uint256[2][2] b;
         uint256[2] c;
         uint256[16] input;
     }
 
-    // TODO: check exect types
+    // TODO: check exact types
     /// @dev Holds ZKP and its validity
-    struct ProofWithValidity {
-        Proof proof;
+    struct ZkpWithValidity {
+        Zkp zkp;
         bool isValid;
     }
 
@@ -48,22 +48,22 @@ interface IVerifier {
     ) external returns (bytes32 c);
 
     /**
-     * @notice Receives and confirms nodes matched with the random challenge.
-     * @dev To confirm, calculate root hash value from the given hash values and merkle paths.
-     * @param matchedNodes Array of nodes matched with the random challenge
-     * @return confirmedNodes Array of hash values of the confirmed nodes
+     * @notice Receives and verifies Merkle proofs matched with the random challenge.
+     * @dev Use https://docs.openzeppelin.com/contracts/4.x/api/utils#MerkleProof to verify Merkle proofs.
+     * @param merkleProofs Array of Merkle proofs matched with the random challenge
+     * @return verifiedNodes Array of hash values of the verified nodes
      */
     function reveal(
-        MatchedNode[] calldata matchedNodes
-    ) external view returns (Node[] memory confirmedNodes);
+        MerkleProof[] calldata merkleProofs
+    ) external view returns (Node[] memory verifiedNodes);
 
     /**
      * @notice Receives and verifies ZKPs.
      * @dev Come up with a way to efficiently store verified ZKPs in smart contract (to be used by external contracts).
-     * @param proofs Array of client-generated ZKPs
+     * @param zkps Array of client-generated ZKPs
      * @return results Array of validity of ZKPs
      */
     function verify(
-        Proof[] memory proofs
-    ) external returns (ProofWithValidity[] memory results);
+        Zkp[] memory zkps
+    ) external returns (ZkpWithValidity[] memory results);
 }

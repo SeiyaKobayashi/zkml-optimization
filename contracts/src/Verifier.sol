@@ -32,12 +32,12 @@ contract Verifier is IVerifier, Ownable {
 
     // TODO: implement function
     function reveal(
-        MatchedNode[] calldata matchedNodes
-    ) external view returns (Node[] memory confirmedNodes) {}
+        MerkleProof[] calldata merkleProofs
+    ) external view returns (Node[] memory verifiedNodes) {}
 
     // TODO: implement function
     function verify(
-        Proof[] memory proofs
-    ) external returns (ProofWithValidity[] memory results) {}
+        Zkp[] memory zkps
+    ) external returns (ZkpWithValidity[] memory results) {}
 }
 /* solhint-enable */
