@@ -7,12 +7,12 @@
       "inputs": [
         {
           "internalType": "bytes32",
-          "name": "commitmentData",
+          "name": "commitmentModel",
           "type": "bytes32"
         },
         {
           "internalType": "bytes32",
-          "name": "commitmentModel",
+          "name": "commitmentData",
           "type": "bytes32"
         },
         {
@@ -24,8 +24,13 @@
       "name": "commit",
       "outputs": [
         {
+          "internalType": "uint256",
+          "name": "commitmentId",
+          "type": "uint256"
+        },
+        {
           "internalType": "bytes32",
-          "name": "c",
+          "name": "challenge",
           "type": "bytes32"
         }
       ],
@@ -34,6 +39,106 @@
     },
     {
       "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "modelCommitment",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getModelInfo",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "modelName",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "modelDescription",
+              "type": "string"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "modelCommitment",
+              "type": "bytes32"
+            }
+          ],
+          "internalType": "struct IVerifier.Model",
+          "name": "model",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getModels",
+      "outputs": [
+        {
+          "internalType": "bytes32[]",
+          "name": "models",
+          "type": "bytes32[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "modelName",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "modelDescription",
+          "type": "string"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "modelCommitment",
+          "type": "bytes32"
+        }
+      ],
+      "name": "registerModel",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "modelName",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "modelDescription",
+              "type": "string"
+            },
+            {
+              "internalType": "bytes32",
+              "name": "modelCommitment",
+              "type": "bytes32"
+            }
+          ],
+          "internalType": "struct IVerifier.Model",
+          "name": "model",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "commitmentId",
+          "type": "uint256"
+        },
         {
           "components": [
             {
@@ -45,7 +150,7 @@
                 }
               ],
               "internalType": "struct IVerifier.Node",
-              "name": "node",
+              "name": "leaf",
               "type": "tuple"
             },
             {
@@ -57,7 +162,7 @@
                 }
               ],
               "internalType": "struct IVerifier.Node[]",
-              "name": "merklePath",
+              "name": "proof",
               "type": "tuple[]"
             }
           ],
@@ -86,6 +191,11 @@
     },
     {
       "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "commitmentId",
+          "type": "uint256"
+        },
         {
           "components": [
             {
@@ -152,7 +262,7 @@
             }
           ],
           "internalType": "struct IVerifier.ZkpWithValidity[]",
-          "name": "results",
+          "name": "zkpVerifications",
           "type": "tuple[]"
         }
       ],
