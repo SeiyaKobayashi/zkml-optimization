@@ -6,10 +6,10 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "compile": "yarn hardhat compile",
-    "lint": "yarn solhint -c .solhint.json --ignore-path .solhintignore --fix **/*.sol",
-    "prettify": "yarn prettier --write **/*.sol",
-    "test": "yarn hardhat test"
+    "compile": "hardhat compile",
+    "lint": "solhint -c .solhint.json --ignore-path .solhintignore --fix **/*.sol",
+    "prettify": "prettier --write **/*.sol",
+    "test": "hardhat test"
   },
   "dependencies": {
     "@openzeppelin/contracts": "4.8.0"

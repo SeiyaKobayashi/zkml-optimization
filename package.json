@@ -5,6 +5,9 @@
   "author": "SeiyaKobayashi <seiya.kobayashi.work@gmail.com>",
   "license": "MIT",
   "private": true,
+  "engines": {
+    "node": "18.12.1"
+  },
   "workspaces": [
     "contracts",
     "clients"
