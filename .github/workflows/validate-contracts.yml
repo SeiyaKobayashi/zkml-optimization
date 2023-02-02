@@ -7,10 +7,10 @@ on:
       - main
   pull_request:
     paths:
-      - .github/workflows/validate-contracts.yml
-      - .github/actions/setup/node/action.yml
-      - contracts/**
-      - !contracts/README.md
+      - '.github/workflows/validate-contracts.yml'
+      - '.github/actions/setup/node/action.yml'
+      - 'contracts/**'
+      - '!contracts/README.md'
 
 defaults:
   run:
