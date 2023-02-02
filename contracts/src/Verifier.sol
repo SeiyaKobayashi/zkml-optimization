@@ -47,10 +47,7 @@ contract Verifier is IVerifier, Ownable {
         string calldata modelName,
         string calldata modelDescription
     ) external returns (Model memory modelInfo) {
-        require(
-            Hash.unwrap(modelCommitment).length != 0,
-            "invalid modelCommitment"
-        );
+        // TODO: validate modelCommitment
         require(
             bytes(hashToModel[modelCommitment].name).length == 0,
             "model already exists"
@@ -96,8 +93,8 @@ contract Verifier is IVerifier, Ownable {
         uint32 offset,
         uint32 limit
     ) external view returns (ModelCommitment[] memory modelCommitments) {
-        require(offset > models.length - 1 || offset < 0, "invalid offset");
-        require(limit < 0, "invalid limit");
+        require(offset <= models.length - 1 && offset >= 0, "invalid offset");
+        require(limit >= 0, "invalid limit");
 
         // set default limit to 20
         if (limit == 0) {
