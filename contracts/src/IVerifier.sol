@@ -6,22 +6,26 @@ pragma solidity 0.8.17;
  * @author Seiya Kobayashi
  */
 interface IVerifier {
-    /// @dev Holds model info
+    /// @dev Type of hash
+    type Hash is bytes32;
+
+    /// @dev Holds model details
     struct Model {
-        string modelName;
-        string modelDescription;
-        bytes32 modelCommitment;
+        string name;
+        string description;
+        address owner;
     }
 
-    /// @dev Holds hash value of node
-    struct Node {
-        bytes32 value;
+    /// @dev Holds model's hash value and name
+    struct ModelCommitment {
+        Hash commitment;
+        string name;
     }
 
-    /// @dev Holds hash value of the matched node and hash values of its Merkle path (to calculate root hash)
+    /// @dev Holds value of the matched leaf node and its Merkle proof (values of its Merkle path)
     struct MerkleProof {
-        Node leaf;
-        Node[] proof;
+        Hash leaf;
+        Hash[] proof;
     }
 
     // TODO: check exact types
@@ -42,34 +46,41 @@ interface IVerifier {
 
     /**
      * @notice Registers a model in the verifier contract.
-     * @dev Store models as a mapping (key = commitment, value = name & description),
-            and as an array of commitments (to be able to get the list of models registered).
+     * @dev Stores models as a mapping (key = commitment, value = name & description & address of caller) for lookups,
+            and as an array to be able to get the list of models registered.
+     * @param modelCommitment Hash value (address of IPFS) of model to be registered
      * @param modelName Name of model to be registered
      * @param modelDescription Description of model to be registered
-     * @param modelCommitment Hash value of URL (of IPFS) of model to be registered
-     * @return model Registered model
+     * @return modelInfo Registered model
      */
     function registerModel(
+        Hash modelCommitment,
         string calldata modelName,
-        string calldata modelDescription,
-        bytes32 modelCommitment
-    ) external returns (Model memory model);
+        string calldata modelDescription
+    ) external returns (Model memory modelInfo);
 
     /**
      * @notice Get the list of models registered.
-     * @dev Would be nice to add params (e.g. 'isAvailable') to 'Model' struct for filtering purpose.
-     * @return models List of models registered
+     * @dev Would be nice to add more fields (e.g. 'isAvailable') to 'Model' struct for filtering purpose.
+     * @param ownerAddress Address of model owner (filtering purpose)
+     * @param offset Starting index of array of models to be fetched
+     * @param limit Number of models to fetch
+     * @return modelCommitments List of models registered
      */
-    function getModels() external view returns (bytes32[] memory models);
+    function getModels(
+        address ownerAddress,
+        uint32 offset,
+        uint32 limit
+    ) external view returns (ModelCommitment[] memory modelCommitments);
 
     /**
      * @notice Get info of the requested model.
-     * @param modelCommitment Hash value of URL (of IPFS) of model
-     * @return model Info of the requested model
+     * @param modelCommitment Hash value (address of IPFS) of model
+     * @return modelInfo Info of the requested model
      */
     function getModelInfo(
-        bytes32 modelCommitment
-    ) external view returns (Model memory model);
+        Hash modelCommitment
+    ) external view returns (Model memory modelInfo);
 
     /**
      * @notice Receives and stores commitments of testing results. Generates a random challenge in return.
@@ -96,7 +107,7 @@ interface IVerifier {
     function reveal(
         uint256 commitmentId,
         MerkleProof[] calldata merkleProofs
-    ) external view returns (Node[] memory verifiedNodes);
+    ) external view returns (Hash[] memory verifiedNodes);
 
     /**
      * @notice Receives and verifies ZKPs.
