@@ -25,24 +25,28 @@ import type {
 
 export declare namespace IVerifier {
   export type ModelStruct = {
+    contentId: PromiseOrValue<BytesLike>;
     name: PromiseOrValue<string>;
     description: PromiseOrValue<string>;
-    owner: PromiseOrValue<string>;
+    ownerAddress: PromiseOrValue<string>;
+    isDisabled: PromiseOrValue<boolean>;
   };
 
-  export type ModelStructOutput = [string, string, string] & {
+  export type ModelStructOutput = [string, string, string, string, boolean] & {
+    contentId: string;
     name: string;
     description: string;
-    owner: string;
+    ownerAddress: string;
+    isDisabled: boolean;
   };
 
-  export type ModelCommitmentStruct = {
-    commitment: PromiseOrValue<BytesLike>;
+  export type ModelArrayElementStruct = {
+    contentId: PromiseOrValue<BytesLike>;
     name: PromiseOrValue<string>;
   };
 
-  export type ModelCommitmentStructOutput = [string, string] & {
-    commitment: string;
+  export type ModelArrayElementStructOutput = [string, string] & {
+    contentId: string;
     name: string;
   };
 
@@ -92,20 +96,26 @@ export declare namespace IVerifier {
 export interface IVerifierInterface extends utils.Interface {
   functions: {
     "commit(bytes32,bytes32,bytes32)": FunctionFragment;
-    "getModelInfo(bytes32)": FunctionFragment;
-    "getModels(address,uint32,uint32)": FunctionFragment;
+    "disableModel(bytes32)": FunctionFragment;
+    "getModel(bytes32)": FunctionFragment;
+    "getModels(uint32,uint32)": FunctionFragment;
+    "getModelsByOwnerAddress(address,uint32,uint32)": FunctionFragment;
     "registerModel(bytes32,string,string)": FunctionFragment;
     "reveal(uint256,(bytes32,bytes32[])[])": FunctionFragment;
+    "updateModel(bytes32,string,string)": FunctionFragment;
     "verify(uint256,(uint256[2],uint256[2][2],uint256[2],uint256[16])[])": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
       | "commit"
-      | "getModelInfo"
+      | "disableModel"
+      | "getModel"
       | "getModels"
+      | "getModelsByOwnerAddress"
       | "registerModel"
       | "reveal"
+      | "updateModel"
       | "verify"
   ): FunctionFragment;
 
@@ -118,11 +128,19 @@ export interface IVerifierInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "getModelInfo",
+    functionFragment: "disableModel",
+    values: [PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getModel",
     values: [PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(
     functionFragment: "getModels",
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getModelsByOwnerAddress",
     values: [
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>,
@@ -142,21 +160,38 @@ export interface IVerifierInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>, IVerifier.MerkleProofStruct[]]
   ): string;
   encodeFunctionData(
+    functionFragment: "updateModel",
+    values: [
+      PromiseOrValue<BytesLike>,
+      PromiseOrValue<string>,
+      PromiseOrValue<string>
+    ]
+  ): string;
+  encodeFunctionData(
     functionFragment: "verify",
     values: [PromiseOrValue<BigNumberish>, IVerifier.ZkpStruct[]]
   ): string;
 
   decodeFunctionResult(functionFragment: "commit", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "getModelInfo",
+    functionFragment: "disableModel",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "getModel", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getModels", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getModelsByOwnerAddress",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "registerModel",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "reveal", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "updateModel",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "verify", data: BytesLike): Result;
 
   events: {};
@@ -196,26 +231,41 @@ export interface IVerifier extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    getModelInfo(
-      modelCommitment: PromiseOrValue<BytesLike>,
+    disableModel(
+      modelContentId: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    getModel(
+      modelContentId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<
-      [IVerifier.ModelStructOutput] & { modelInfo: IVerifier.ModelStructOutput }
+      [IVerifier.ModelStructOutput] & { model: IVerifier.ModelStructOutput }
     >;
 
     getModels(
+      offset: PromiseOrValue<BigNumberish>,
+      limit: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<
+      [IVerifier.ModelArrayElementStructOutput[]] & {
+        models: IVerifier.ModelArrayElementStructOutput[];
+      }
+    >;
+
+    getModelsByOwnerAddress(
       ownerAddress: PromiseOrValue<string>,
       offset: PromiseOrValue<BigNumberish>,
       limit: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<
-      [IVerifier.ModelCommitmentStructOutput[]] & {
-        modelCommitments: IVerifier.ModelCommitmentStructOutput[];
+      [IVerifier.ModelArrayElementStructOutput[]] & {
+        models: IVerifier.ModelArrayElementStructOutput[];
       }
     >;
 
     registerModel(
-      modelCommitment: PromiseOrValue<BytesLike>,
+      modelContentId: PromiseOrValue<BytesLike>,
       modelName: PromiseOrValue<string>,
       modelDescription: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -226,6 +276,13 @@ export interface IVerifier extends BaseContract {
       merkleProofs: IVerifier.MerkleProofStruct[],
       overrides?: CallOverrides
     ): Promise<[string[]] & { verifiedNodes: string[] }>;
+
+    updateModel(
+      modelContentId: PromiseOrValue<BytesLike>,
+      modelName: PromiseOrValue<string>,
+      modelDescription: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     verify(
       commitmentId: PromiseOrValue<BigNumberish>,
@@ -241,20 +298,31 @@ export interface IVerifier extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  getModelInfo(
-    modelCommitment: PromiseOrValue<BytesLike>,
+  disableModel(
+    modelContentId: PromiseOrValue<BytesLike>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  getModel(
+    modelContentId: PromiseOrValue<BytesLike>,
     overrides?: CallOverrides
   ): Promise<IVerifier.ModelStructOutput>;
 
   getModels(
+    offset: PromiseOrValue<BigNumberish>,
+    limit: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<IVerifier.ModelArrayElementStructOutput[]>;
+
+  getModelsByOwnerAddress(
     ownerAddress: PromiseOrValue<string>,
     offset: PromiseOrValue<BigNumberish>,
     limit: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
-  ): Promise<IVerifier.ModelCommitmentStructOutput[]>;
+  ): Promise<IVerifier.ModelArrayElementStructOutput[]>;
 
   registerModel(
-    modelCommitment: PromiseOrValue<BytesLike>,
+    modelContentId: PromiseOrValue<BytesLike>,
     modelName: PromiseOrValue<string>,
     modelDescription: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -265,6 +333,13 @@ export interface IVerifier extends BaseContract {
     merkleProofs: IVerifier.MerkleProofStruct[],
     overrides?: CallOverrides
   ): Promise<string[]>;
+
+  updateModel(
+    modelContentId: PromiseOrValue<BytesLike>,
+    modelName: PromiseOrValue<string>,
+    modelDescription: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   verify(
     commitmentId: PromiseOrValue<BigNumberish>,
@@ -282,20 +357,31 @@ export interface IVerifier extends BaseContract {
       [BigNumber, string] & { commitmentId: BigNumber; challenge: string }
     >;
 
-    getModelInfo(
-      modelCommitment: PromiseOrValue<BytesLike>,
+    disableModel(
+      modelContentId: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<IVerifier.ModelStructOutput>;
+
+    getModel(
+      modelContentId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<IVerifier.ModelStructOutput>;
 
     getModels(
+      offset: PromiseOrValue<BigNumberish>,
+      limit: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<IVerifier.ModelArrayElementStructOutput[]>;
+
+    getModelsByOwnerAddress(
       ownerAddress: PromiseOrValue<string>,
       offset: PromiseOrValue<BigNumberish>,
       limit: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<IVerifier.ModelCommitmentStructOutput[]>;
+    ): Promise<IVerifier.ModelArrayElementStructOutput[]>;
 
     registerModel(
-      modelCommitment: PromiseOrValue<BytesLike>,
+      modelContentId: PromiseOrValue<BytesLike>,
       modelName: PromiseOrValue<string>,
       modelDescription: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -306,6 +392,13 @@ export interface IVerifier extends BaseContract {
       merkleProofs: IVerifier.MerkleProofStruct[],
       overrides?: CallOverrides
     ): Promise<string[]>;
+
+    updateModel(
+      modelContentId: PromiseOrValue<BytesLike>,
+      modelName: PromiseOrValue<string>,
+      modelDescription: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<IVerifier.ModelStructOutput>;
 
     verify(
       commitmentId: PromiseOrValue<BigNumberish>,
@@ -324,12 +417,23 @@ export interface IVerifier extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    getModelInfo(
-      modelCommitment: PromiseOrValue<BytesLike>,
+    disableModel(
+      modelContentId: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    getModel(
+      modelContentId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getModels(
+      offset: PromiseOrValue<BigNumberish>,
+      limit: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getModelsByOwnerAddress(
       ownerAddress: PromiseOrValue<string>,
       offset: PromiseOrValue<BigNumberish>,
       limit: PromiseOrValue<BigNumberish>,
@@ -337,7 +441,7 @@ export interface IVerifier extends BaseContract {
     ): Promise<BigNumber>;
 
     registerModel(
-      modelCommitment: PromiseOrValue<BytesLike>,
+      modelContentId: PromiseOrValue<BytesLike>,
       modelName: PromiseOrValue<string>,
       modelDescription: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -347,6 +451,13 @@ export interface IVerifier extends BaseContract {
       commitmentId: PromiseOrValue<BigNumberish>,
       merkleProofs: IVerifier.MerkleProofStruct[],
       overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    updateModel(
+      modelContentId: PromiseOrValue<BytesLike>,
+      modelName: PromiseOrValue<string>,
+      modelDescription: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     verify(
@@ -364,12 +475,23 @@ export interface IVerifier extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    getModelInfo(
-      modelCommitment: PromiseOrValue<BytesLike>,
+    disableModel(
+      modelContentId: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    getModel(
+      modelContentId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getModels(
+      offset: PromiseOrValue<BigNumberish>,
+      limit: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getModelsByOwnerAddress(
       ownerAddress: PromiseOrValue<string>,
       offset: PromiseOrValue<BigNumberish>,
       limit: PromiseOrValue<BigNumberish>,
@@ -377,7 +499,7 @@ export interface IVerifier extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     registerModel(
-      modelCommitment: PromiseOrValue<BytesLike>,
+      modelContentId: PromiseOrValue<BytesLike>,
       modelName: PromiseOrValue<string>,
       modelDescription: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -387,6 +509,13 @@ export interface IVerifier extends BaseContract {
       commitmentId: PromiseOrValue<BigNumberish>,
       merkleProofs: IVerifier.MerkleProofStruct[],
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    updateModel(
+      modelContentId: PromiseOrValue<BytesLike>,
+      modelName: PromiseOrValue<string>,
+      modelDescription: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     verify(

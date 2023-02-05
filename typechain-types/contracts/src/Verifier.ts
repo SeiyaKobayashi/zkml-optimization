@@ -29,24 +29,28 @@ import type {
 
 export declare namespace IVerifier {
   export type ModelStruct = {
+    contentId: PromiseOrValue<BytesLike>;
     name: PromiseOrValue<string>;
     description: PromiseOrValue<string>;
-    owner: PromiseOrValue<string>;
+    ownerAddress: PromiseOrValue<string>;
+    isDisabled: PromiseOrValue<boolean>;
   };
 
-  export type ModelStructOutput = [string, string, string] & {
+  export type ModelStructOutput = [string, string, string, string, boolean] & {
+    contentId: string;
     name: string;
     description: string;
-    owner: string;
+    ownerAddress: string;
+    isDisabled: boolean;
   };
 
-  export type ModelCommitmentStruct = {
-    commitment: PromiseOrValue<BytesLike>;
+  export type ModelArrayElementStruct = {
+    contentId: PromiseOrValue<BytesLike>;
     name: PromiseOrValue<string>;
   };
 
-  export type ModelCommitmentStructOutput = [string, string] & {
-    commitment: string;
+  export type ModelArrayElementStructOutput = [string, string] & {
+    contentId: string;
     name: string;
   };
 
@@ -96,26 +100,32 @@ export declare namespace IVerifier {
 export interface VerifierInterface extends utils.Interface {
   functions: {
     "commit(bytes32,bytes32,bytes32)": FunctionFragment;
-    "getModelInfo(bytes32)": FunctionFragment;
-    "getModels(address,uint32,uint32)": FunctionFragment;
+    "disableModel(bytes32)": FunctionFragment;
+    "getModel(bytes32)": FunctionFragment;
+    "getModels(uint32,uint32)": FunctionFragment;
+    "getModelsByOwnerAddress(address,uint32,uint32)": FunctionFragment;
     "owner()": FunctionFragment;
     "registerModel(bytes32,string,string)": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "reveal(uint256,(bytes32,bytes32[])[])": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
+    "updateModel(bytes32,string,string)": FunctionFragment;
     "verify(uint256,(uint256[2],uint256[2][2],uint256[2],uint256[16])[])": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
       | "commit"
-      | "getModelInfo"
+      | "disableModel"
+      | "getModel"
       | "getModels"
+      | "getModelsByOwnerAddress"
       | "owner"
       | "registerModel"
       | "renounceOwnership"
       | "reveal"
       | "transferOwnership"
+      | "updateModel"
       | "verify"
   ): FunctionFragment;
 
@@ -128,11 +138,19 @@ export interface VerifierInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "getModelInfo",
+    functionFragment: "disableModel",
+    values: [PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getModel",
     values: [PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(
     functionFragment: "getModels",
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getModelsByOwnerAddress",
     values: [
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>,
@@ -161,16 +179,29 @@ export interface VerifierInterface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
+    functionFragment: "updateModel",
+    values: [
+      PromiseOrValue<BytesLike>,
+      PromiseOrValue<string>,
+      PromiseOrValue<string>
+    ]
+  ): string;
+  encodeFunctionData(
     functionFragment: "verify",
     values: [PromiseOrValue<BigNumberish>, IVerifier.ZkpStruct[]]
   ): string;
 
   decodeFunctionResult(functionFragment: "commit", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "getModelInfo",
+    functionFragment: "disableModel",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "getModel", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getModels", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getModelsByOwnerAddress",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "registerModel",
@@ -185,30 +216,59 @@ export interface VerifierInterface extends utils.Interface {
     functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "updateModel",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "verify", data: BytesLike): Result;
 
   events: {
-    "ModelRegistration(bytes32,address,string,string)": EventFragment;
+    "ModelDisabled(bytes32,address)": EventFragment;
+    "ModelRegistered(bytes32,address)": EventFragment;
+    "ModelUpdated(bytes32,address,string,string)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "ModelRegistration"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ModelDisabled"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ModelRegistered"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ModelUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
 }
 
-export interface ModelRegistrationEventObject {
-  hash: string;
-  owner: string;
+export interface ModelDisabledEventObject {
+  contentId: string;
+  ownerAddress: string;
+}
+export type ModelDisabledEvent = TypedEvent<
+  [string, string],
+  ModelDisabledEventObject
+>;
+
+export type ModelDisabledEventFilter = TypedEventFilter<ModelDisabledEvent>;
+
+export interface ModelRegisteredEventObject {
+  contentId: string;
+  ownerAddress: string;
+}
+export type ModelRegisteredEvent = TypedEvent<
+  [string, string],
+  ModelRegisteredEventObject
+>;
+
+export type ModelRegisteredEventFilter = TypedEventFilter<ModelRegisteredEvent>;
+
+export interface ModelUpdatedEventObject {
+  contentId: string;
+  ownerAddress: string;
   name: string;
   description: string;
 }
-export type ModelRegistrationEvent = TypedEvent<
+export type ModelUpdatedEvent = TypedEvent<
   [string, string, string, string],
-  ModelRegistrationEventObject
+  ModelUpdatedEventObject
 >;
 
-export type ModelRegistrationEventFilter =
-  TypedEventFilter<ModelRegistrationEvent>;
+export type ModelUpdatedEventFilter = TypedEventFilter<ModelUpdatedEvent>;
 
 export interface OwnershipTransferredEventObject {
   previousOwner: string;
@@ -256,28 +316,43 @@ export interface Verifier extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    getModelInfo(
-      modelCommitment: PromiseOrValue<BytesLike>,
+    disableModel(
+      modelContentId: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    getModel(
+      modelContentId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<
-      [IVerifier.ModelStructOutput] & { modelInfo: IVerifier.ModelStructOutput }
+      [IVerifier.ModelStructOutput] & { model: IVerifier.ModelStructOutput }
     >;
 
     getModels(
+      offset: PromiseOrValue<BigNumberish>,
+      limit: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<
+      [IVerifier.ModelArrayElementStructOutput[]] & {
+        paginatedModels: IVerifier.ModelArrayElementStructOutput[];
+      }
+    >;
+
+    getModelsByOwnerAddress(
       ownerAddress: PromiseOrValue<string>,
       offset: PromiseOrValue<BigNumberish>,
       limit: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<
-      [IVerifier.ModelCommitmentStructOutput[]] & {
-        modelCommitments: IVerifier.ModelCommitmentStructOutput[];
+      [IVerifier.ModelArrayElementStructOutput[]] & {
+        paginatedModels: IVerifier.ModelArrayElementStructOutput[];
       }
     >;
 
     owner(overrides?: CallOverrides): Promise<[string]>;
 
     registerModel(
-      modelCommitment: PromiseOrValue<BytesLike>,
+      modelContentId: PromiseOrValue<BytesLike>,
       modelName: PromiseOrValue<string>,
       modelDescription: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -298,6 +373,13 @@ export interface Verifier extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    updateModel(
+      modelContentId: PromiseOrValue<BytesLike>,
+      modelName: PromiseOrValue<string>,
+      modelDescription: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     verify(
       commitmentId: PromiseOrValue<BigNumberish>,
       zkps: IVerifier.ZkpStruct[],
@@ -312,22 +394,33 @@ export interface Verifier extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  getModelInfo(
-    modelCommitment: PromiseOrValue<BytesLike>,
+  disableModel(
+    modelContentId: PromiseOrValue<BytesLike>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  getModel(
+    modelContentId: PromiseOrValue<BytesLike>,
     overrides?: CallOverrides
   ): Promise<IVerifier.ModelStructOutput>;
 
   getModels(
+    offset: PromiseOrValue<BigNumberish>,
+    limit: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<IVerifier.ModelArrayElementStructOutput[]>;
+
+  getModelsByOwnerAddress(
     ownerAddress: PromiseOrValue<string>,
     offset: PromiseOrValue<BigNumberish>,
     limit: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
-  ): Promise<IVerifier.ModelCommitmentStructOutput[]>;
+  ): Promise<IVerifier.ModelArrayElementStructOutput[]>;
 
   owner(overrides?: CallOverrides): Promise<string>;
 
   registerModel(
-    modelCommitment: PromiseOrValue<BytesLike>,
+    modelContentId: PromiseOrValue<BytesLike>,
     modelName: PromiseOrValue<string>,
     modelDescription: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -348,6 +441,13 @@ export interface Verifier extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  updateModel(
+    modelContentId: PromiseOrValue<BytesLike>,
+    modelName: PromiseOrValue<string>,
+    modelDescription: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   verify(
     commitmentId: PromiseOrValue<BigNumberish>,
     zkps: IVerifier.ZkpStruct[],
@@ -364,22 +464,33 @@ export interface Verifier extends BaseContract {
       [BigNumber, string] & { commitmentId: BigNumber; challenge: string }
     >;
 
-    getModelInfo(
-      modelCommitment: PromiseOrValue<BytesLike>,
+    disableModel(
+      modelContentId: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<IVerifier.ModelStructOutput>;
+
+    getModel(
+      modelContentId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<IVerifier.ModelStructOutput>;
 
     getModels(
+      offset: PromiseOrValue<BigNumberish>,
+      limit: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<IVerifier.ModelArrayElementStructOutput[]>;
+
+    getModelsByOwnerAddress(
       ownerAddress: PromiseOrValue<string>,
       offset: PromiseOrValue<BigNumberish>,
       limit: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<IVerifier.ModelCommitmentStructOutput[]>;
+    ): Promise<IVerifier.ModelArrayElementStructOutput[]>;
 
     owner(overrides?: CallOverrides): Promise<string>;
 
     registerModel(
-      modelCommitment: PromiseOrValue<BytesLike>,
+      modelContentId: PromiseOrValue<BytesLike>,
       modelName: PromiseOrValue<string>,
       modelDescription: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -398,6 +509,13 @@ export interface Verifier extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    updateModel(
+      modelContentId: PromiseOrValue<BytesLike>,
+      modelName: PromiseOrValue<string>,
+      modelDescription: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<IVerifier.ModelStructOutput>;
+
     verify(
       commitmentId: PromiseOrValue<BigNumberish>,
       zkps: IVerifier.ZkpStruct[],
@@ -406,18 +524,36 @@ export interface Verifier extends BaseContract {
   };
 
   filters: {
-    "ModelRegistration(bytes32,address,string,string)"(
-      hash?: PromiseOrValue<BytesLike> | null,
-      owner?: PromiseOrValue<string> | null,
+    "ModelDisabled(bytes32,address)"(
+      contentId?: PromiseOrValue<BytesLike> | null,
+      ownerAddress?: PromiseOrValue<string> | null
+    ): ModelDisabledEventFilter;
+    ModelDisabled(
+      contentId?: PromiseOrValue<BytesLike> | null,
+      ownerAddress?: PromiseOrValue<string> | null
+    ): ModelDisabledEventFilter;
+
+    "ModelRegistered(bytes32,address)"(
+      contentId?: PromiseOrValue<BytesLike> | null,
+      ownerAddress?: PromiseOrValue<string> | null
+    ): ModelRegisteredEventFilter;
+    ModelRegistered(
+      contentId?: PromiseOrValue<BytesLike> | null,
+      ownerAddress?: PromiseOrValue<string> | null
+    ): ModelRegisteredEventFilter;
+
+    "ModelUpdated(bytes32,address,string,string)"(
+      contentId?: PromiseOrValue<BytesLike> | null,
+      ownerAddress?: PromiseOrValue<string> | null,
       name?: null,
       description?: null
-    ): ModelRegistrationEventFilter;
-    ModelRegistration(
-      hash?: PromiseOrValue<BytesLike> | null,
-      owner?: PromiseOrValue<string> | null,
+    ): ModelUpdatedEventFilter;
+    ModelUpdated(
+      contentId?: PromiseOrValue<BytesLike> | null,
+      ownerAddress?: PromiseOrValue<string> | null,
       name?: null,
       description?: null
-    ): ModelRegistrationEventFilter;
+    ): ModelUpdatedEventFilter;
 
     "OwnershipTransferred(address,address)"(
       previousOwner?: PromiseOrValue<string> | null,
@@ -437,12 +573,23 @@ export interface Verifier extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    getModelInfo(
-      modelCommitment: PromiseOrValue<BytesLike>,
+    disableModel(
+      modelContentId: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    getModel(
+      modelContentId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getModels(
+      offset: PromiseOrValue<BigNumberish>,
+      limit: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getModelsByOwnerAddress(
       ownerAddress: PromiseOrValue<string>,
       offset: PromiseOrValue<BigNumberish>,
       limit: PromiseOrValue<BigNumberish>,
@@ -452,7 +599,7 @@ export interface Verifier extends BaseContract {
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
     registerModel(
-      modelCommitment: PromiseOrValue<BytesLike>,
+      modelContentId: PromiseOrValue<BytesLike>,
       modelName: PromiseOrValue<string>,
       modelDescription: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -470,6 +617,13 @@ export interface Verifier extends BaseContract {
 
     transferOwnership(
       newOwner: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    updateModel(
+      modelContentId: PromiseOrValue<BytesLike>,
+      modelName: PromiseOrValue<string>,
+      modelDescription: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -488,12 +642,23 @@ export interface Verifier extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    getModelInfo(
-      modelCommitment: PromiseOrValue<BytesLike>,
+    disableModel(
+      modelContentId: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    getModel(
+      modelContentId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getModels(
+      offset: PromiseOrValue<BigNumberish>,
+      limit: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getModelsByOwnerAddress(
       ownerAddress: PromiseOrValue<string>,
       offset: PromiseOrValue<BigNumberish>,
       limit: PromiseOrValue<BigNumberish>,
@@ -503,7 +668,7 @@ export interface Verifier extends BaseContract {
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     registerModel(
-      modelCommitment: PromiseOrValue<BytesLike>,
+      modelContentId: PromiseOrValue<BytesLike>,
       modelName: PromiseOrValue<string>,
       modelDescription: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -521,6 +686,13 @@ export interface Verifier extends BaseContract {
 
     transferOwnership(
       newOwner: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateModel(
+      modelContentId: PromiseOrValue<BytesLike>,
+      modelName: PromiseOrValue<string>,
+      modelDescription: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

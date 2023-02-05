@@ -15,22 +15,55 @@ contract Verifier is IVerifier, Ownable {
     /*
         state variables
     */
-    // array of hashes & names of models
-    ModelCommitment[] private models;
-    // mapping of owner address to models
-    mapping(address => ModelCommitment[]) private addressToModels;
-    // mapping of Hash to model
-    mapping(Hash => Model) private hashToModel;
+
+    // array of content IDs of models
+    Hash[] private models;
+    // mapping of owner address to array of content IDs of models
+    mapping(address => Hash[]) private ownerAddressToModels;
+    // mapping of content ID of model to model details
+    mapping(Hash => Model) private contentIdToModel;
 
     /*
         events
     */
-    event ModelRegistration(
-        Hash indexed hash,
-        address indexed owner,
+
+    // event to be emitted when a model is registered
+    event ModelRegistered(Hash indexed contentId, address indexed ownerAddress);
+    // event to be emitted when a model is updated
+    event ModelUpdated(
+        Hash indexed contentId,
+        address indexed ownerAddress,
         string name,
         string description
     );
+    // event to be emitted when a model is disabled
+    event ModelDisabled(Hash indexed contentId, address indexed ownerAddress);
+
+    /*
+        modifiers
+    */
+
+    modifier validateModelParameters(
+        string calldata modelName,
+        string calldata modelDescription
+    ) {
+        require(bytes(modelName).length != 0, "empty modelName");
+        require(bytes(modelDescription).length != 0, "empty modelDescription");
+        _;
+    }
+
+    modifier checkIfModelExists(Hash modelContentId) {
+        require(
+            bytes(contentIdToModel[modelContentId].name).length != 0,
+            "model not found"
+        );
+        _;
+    }
+
+    modifier validateLimitParameter(uint32 limit) {
+        require(limit > 0 && limit <= 30, "limit must be > 0 and <= 30");
+        _;
+    }
 
     // TODO: enable solhint
     /* solhint-disable */
@@ -40,106 +73,135 @@ contract Verifier is IVerifier, Ownable {
 
     /* solhint-enable */
 
-    // TODO: add modifiers (if necessary)
-
     function registerModel(
-        Hash modelCommitment,
+        Hash modelContentId,
         string calldata modelName,
         string calldata modelDescription
-    ) external returns (Model memory modelInfo) {
-        // TODO: validate modelCommitment
+    )
+        external
+        validateModelParameters(modelName, modelDescription)
+        returns (Model memory model)
+    {
         require(
-            bytes(hashToModel[modelCommitment].name).length == 0,
+            bytes(contentIdToModel[modelContentId].name).length == 0,
             "model already exists"
         );
-        require(bytes(modelName).length != 0, "invalid modelName");
-        require(
-            bytes(modelDescription).length != 0,
-            "invalid modelDescription"
-        );
 
-        ModelCommitment memory _modelCommitment = ModelCommitment({
-            commitment: modelCommitment,
-            name: modelName
-        });
-
-        // add model to array for listing
-        models.push(_modelCommitment);
-
-        // add model to mapping for searching by address of model owner
-        addressToModels[msg.sender].push(_modelCommitment);
-
+        models.push(modelContentId);
+        ownerAddressToModels[msg.sender].push(modelContentId);
         Model memory _model = Model({
+            contentId: modelContentId,
             name: modelName,
             description: modelDescription,
-            owner: msg.sender
+            ownerAddress: msg.sender,
+            isDisabled: false
         });
+        contentIdToModel[modelContentId] = _model;
 
-        // add model to mapping for searching by commitment
-        hashToModel[modelCommitment] = _model;
-
-        emit ModelRegistration(
-            modelCommitment,
-            msg.sender,
-            modelName,
-            modelDescription
-        );
+        emit ModelRegistered(modelContentId, msg.sender);
 
         return _model;
     }
 
+    function getModel(
+        Hash modelContentId
+    )
+        external
+        view
+        checkIfModelExists(modelContentId)
+        returns (Model memory model)
+    {
+        return contentIdToModel[modelContentId];
+    }
+
     function getModels(
+        uint32 offset,
+        uint32 limit
+    )
+        external
+        view
+        validateLimitParameter(limit)
+        returns (ModelArrayElement[] memory paginatedModels)
+    {
+        require(
+            offset >= 0 && offset < models.length,
+            "offset must >= 0 and < length of list of models"
+        );
+
+        return _paginateModels(models, offset, limit);
+    }
+
+    function getModelsByOwnerAddress(
         address ownerAddress,
         uint32 offset,
         uint32 limit
-    ) external view returns (ModelCommitment[] memory modelCommitments) {
-        require(offset <= models.length - 1 && offset >= 0, "invalid offset");
-        require(limit >= 0, "invalid limit");
+    )
+        external
+        view
+        validateLimitParameter(limit)
+        returns (ModelArrayElement[] memory paginatedModels)
+    {
+        require(
+            ownerAddressToModels[ownerAddress].length != 0,
+            "model owner not found"
+        );
+        require(
+            offset >= 0 && offset < ownerAddressToModels[ownerAddress].length,
+            "offset must >= 0 and < length of list of models"
+        );
 
-        // set default limit to 20
-        if (limit == 0) {
-            limit = 20;
-        }
-
-        if (ownerAddress == address(0x0)) {
-            return _paginateModels(models, offset, limit);
-        } else {
-            return
-                _paginateModels(addressToModels[ownerAddress], offset, limit);
-        }
+        return
+            _paginateModels(ownerAddressToModels[ownerAddress], offset, limit);
     }
 
     /// @dev Paginate models given array of models, offset and limit.
     function _paginateModels(
-        ModelCommitment[] memory _models,
+        Hash[] memory _modelContentIds,
         uint32 _offset,
         uint32 _limit
-    ) internal pure returns (ModelCommitment[] memory modelCommitments) {
-        if (_offset + _limit > _models.length) {
-            _limit = uint32(_models.length - _offset);
+    ) internal view returns (ModelArrayElement[] memory paginatedModels) {
+        if (_offset + _limit > _modelContentIds.length) {
+            _limit = uint32(_modelContentIds.length - _offset);
         }
 
-        ModelCommitment[] memory _slicedModels = new ModelCommitment[](_limit);
-        for (uint256 i = 0; i < _limit; i++) {
-            _slicedModels[i] = _models[_offset + i];
+        ModelArrayElement[] memory _paginatedModels = new ModelArrayElement[](
+            _limit
+        );
+        for (uint32 i = 0; i < _limit; i++) {
+            Model memory _model = contentIdToModel[
+                _modelContentIds[_offset + i]
+            ];
+            _paginatedModels[i] = ModelArrayElement({
+                contentId: _model.contentId,
+                name: _model.name
+            });
         }
 
-        return _slicedModels;
+        return _paginatedModels;
     }
 
-    function getModelInfo(
-        Hash modelCommitment
-    ) external view returns (Model memory modelInfo) {
-        require(
-            Hash.unwrap(modelCommitment).length != 0,
-            "invalid modelCommitment"
-        );
-        require(
-            bytes(hashToModel[modelCommitment].name).length != 0,
-            "model not found"
-        );
+    function updateModel(
+        Hash modelContentId,
+        string calldata modelName,
+        string calldata modelDescription
+    )
+        external
+        checkIfModelExists(modelContentId)
+        validateModelParameters(modelName, modelDescription)
+        returns (Model memory model)
+    {
+        contentIdToModel[modelContentId].name = modelName;
+        contentIdToModel[modelContentId].description = modelDescription;
 
-        return hashToModel[modelCommitment];
+        return contentIdToModel[modelContentId];
+    }
+
+    function disableModel(
+        Hash modelContentId
+    ) external checkIfModelExists(modelContentId) returns (Model memory model) {
+        contentIdToModel[modelContentId].isDisabled = true;
+
+        return contentIdToModel[modelContentId];
     }
 
     // TODO: enable solhint

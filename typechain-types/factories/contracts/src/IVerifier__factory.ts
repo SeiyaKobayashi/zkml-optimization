@@ -48,14 +48,19 @@ const _abi = [
     inputs: [
       {
         internalType: "IVerifier.Hash",
-        name: "modelCommitment",
+        name: "modelContentId",
         type: "bytes32",
       },
     ],
-    name: "getModelInfo",
+    name: "disableModel",
     outputs: [
       {
         components: [
+          {
+            internalType: "IVerifier.Hash",
+            name: "contentId",
+            type: "bytes32",
+          },
           {
             internalType: "string",
             name: "name",
@@ -68,13 +73,100 @@ const _abi = [
           },
           {
             internalType: "address",
-            name: "owner",
+            name: "ownerAddress",
             type: "address",
+          },
+          {
+            internalType: "bool",
+            name: "isDisabled",
+            type: "bool",
           },
         ],
         internalType: "struct IVerifier.Model",
-        name: "modelInfo",
+        name: "model",
         type: "tuple",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "IVerifier.Hash",
+        name: "modelContentId",
+        type: "bytes32",
+      },
+    ],
+    name: "getModel",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "IVerifier.Hash",
+            name: "contentId",
+            type: "bytes32",
+          },
+          {
+            internalType: "string",
+            name: "name",
+            type: "string",
+          },
+          {
+            internalType: "string",
+            name: "description",
+            type: "string",
+          },
+          {
+            internalType: "address",
+            name: "ownerAddress",
+            type: "address",
+          },
+          {
+            internalType: "bool",
+            name: "isDisabled",
+            type: "bool",
+          },
+        ],
+        internalType: "struct IVerifier.Model",
+        name: "model",
+        type: "tuple",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint32",
+        name: "offset",
+        type: "uint32",
+      },
+      {
+        internalType: "uint32",
+        name: "limit",
+        type: "uint32",
+      },
+    ],
+    name: "getModels",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "IVerifier.Hash",
+            name: "contentId",
+            type: "bytes32",
+          },
+          {
+            internalType: "string",
+            name: "name",
+            type: "string",
+          },
+        ],
+        internalType: "struct IVerifier.ModelArrayElement[]",
+        name: "models",
+        type: "tuple[]",
       },
     ],
     stateMutability: "view",
@@ -98,13 +190,13 @@ const _abi = [
         type: "uint32",
       },
     ],
-    name: "getModels",
+    name: "getModelsByOwnerAddress",
     outputs: [
       {
         components: [
           {
             internalType: "IVerifier.Hash",
-            name: "commitment",
+            name: "contentId",
             type: "bytes32",
           },
           {
@@ -113,8 +205,8 @@ const _abi = [
             type: "string",
           },
         ],
-        internalType: "struct IVerifier.ModelCommitment[]",
-        name: "modelCommitments",
+        internalType: "struct IVerifier.ModelArrayElement[]",
+        name: "models",
         type: "tuple[]",
       },
     ],
@@ -125,7 +217,7 @@ const _abi = [
     inputs: [
       {
         internalType: "IVerifier.Hash",
-        name: "modelCommitment",
+        name: "modelContentId",
         type: "bytes32",
       },
       {
@@ -144,6 +236,11 @@ const _abi = [
       {
         components: [
           {
+            internalType: "IVerifier.Hash",
+            name: "contentId",
+            type: "bytes32",
+          },
+          {
             internalType: "string",
             name: "name",
             type: "string",
@@ -155,12 +252,17 @@ const _abi = [
           },
           {
             internalType: "address",
-            name: "owner",
+            name: "ownerAddress",
             type: "address",
+          },
+          {
+            internalType: "bool",
+            name: "isDisabled",
+            type: "bool",
           },
         ],
         internalType: "struct IVerifier.Model",
-        name: "modelInfo",
+        name: "model",
         type: "tuple",
       },
     ],
@@ -201,6 +303,62 @@ const _abi = [
       },
     ],
     stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "IVerifier.Hash",
+        name: "modelContentId",
+        type: "bytes32",
+      },
+      {
+        internalType: "string",
+        name: "modelName",
+        type: "string",
+      },
+      {
+        internalType: "string",
+        name: "modelDescription",
+        type: "string",
+      },
+    ],
+    name: "updateModel",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "IVerifier.Hash",
+            name: "contentId",
+            type: "bytes32",
+          },
+          {
+            internalType: "string",
+            name: "name",
+            type: "string",
+          },
+          {
+            internalType: "string",
+            name: "description",
+            type: "string",
+          },
+          {
+            internalType: "address",
+            name: "ownerAddress",
+            type: "address",
+          },
+          {
+            internalType: "bool",
+            name: "isDisabled",
+            type: "bool",
+          },
+        ],
+        internalType: "struct IVerifier.Model",
+        name: "model",
+        type: "tuple",
+      },
+    ],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {

@@ -6,19 +6,21 @@ pragma solidity 0.8.17;
  * @author Seiya Kobayashi
  */
 interface IVerifier {
-    /// @dev Type of hash
+    /// @dev Type of keccak256 hash
     type Hash is bytes32;
 
     /// @dev Holds model details
     struct Model {
+        Hash contentId;
         string name;
         string description;
-        address owner;
+        address ownerAddress;
+        bool isDisabled;
     }
 
-    /// @dev Holds model's hash value and name
-    struct ModelCommitment {
-        Hash commitment;
+    /// @dev Holds simplified model details
+    struct ModelArrayElement {
+        Hash contentId;
         string name;
     }
 
@@ -46,41 +48,76 @@ interface IVerifier {
 
     /**
      * @notice Registers a model in the verifier contract.
-     * @dev Stores models as a mapping (key = commitment, value = name & description & address of caller) for lookups,
-            and as an array to be able to get the list of models registered.
-     * @param modelCommitment Hash value (address of IPFS) of model to be registered
-     * @param modelName Name of model to be registered
-     * @param modelDescription Description of model to be registered
-     * @return modelInfo Registered model
+     * @dev Registered model is enabled by default.
+     * @param modelContentId Hash (content ID / address of IPFS) of model
+     * @param modelName Name of model
+     * @param modelDescription Description of model
+     * @return model Registered model
      */
     function registerModel(
-        Hash modelCommitment,
+        Hash modelContentId,
         string calldata modelName,
         string calldata modelDescription
-    ) external returns (Model memory modelInfo);
-
-    /**
-     * @notice Get the list of models registered.
-     * @dev Would be nice to add more fields (e.g. 'isAvailable') to 'Model' struct for filtering purpose.
-     * @param ownerAddress Address of model owner (filtering purpose)
-     * @param offset Starting index of array of models to be fetched
-     * @param limit Number of models to fetch
-     * @return modelCommitments List of models registered
-     */
-    function getModels(
-        address ownerAddress,
-        uint32 offset,
-        uint32 limit
-    ) external view returns (ModelCommitment[] memory modelCommitments);
+    ) external returns (Model memory model);
 
     /**
      * @notice Get info of the requested model.
-     * @param modelCommitment Hash value (address of IPFS) of model
-     * @return modelInfo Info of the requested model
+     * @param modelContentId Hash (content ID / address of IPFS) of model
+     * @return model Info of the requested model
      */
-    function getModelInfo(
-        Hash modelCommitment
-    ) external view returns (Model memory modelInfo);
+    function getModel(
+        Hash modelContentId
+    ) external view returns (Model memory model);
+
+    /**
+     * @notice Get the list of models registered.
+     * @dev Max value of `limit` parameter is 30 for the sake of performance.
+     * @param offset Starting index of array of models to be fetched
+     * @param limit Number of models to fetch
+     * @return models List of models
+     */
+    function getModels(
+        uint32 offset,
+        uint32 limit
+    ) external view returns (ModelArrayElement[] memory models);
+
+    /**
+     * @notice Get the list of models registered by the specified owner.
+     * @dev Max value of `limit` parameter is 30 for the sake of performance.
+     * @param ownerAddress Address of model owner
+     * @param offset Starting index of array of models to be fetched
+     * @param limit Number of models to fetch
+     * @return models List of models
+     */
+    function getModelsByOwnerAddress(
+        address ownerAddress,
+        uint32 offset,
+        uint32 limit
+    ) external view returns (ModelArrayElement[] memory models);
+
+    /**
+     * @notice Update info of the requested model.
+     * @dev 'contentId' & 'ownerAddress' cannot be updated.
+     * @param modelContentId Hash (content ID / address of IPFS) of model
+     * @param modelName Updated name of model
+     * @param modelDescription Updated description of model
+     * @return model Updated model
+     */
+    function updateModel(
+        Hash modelContentId,
+        string calldata modelName,
+        string calldata modelDescription
+    ) external returns (Model memory model);
+
+    /**
+     * @notice Disable the requested model.
+     * @dev Model is logically disabled.
+     * @param modelContentId Hash (content ID / address of IPFS) of model
+     * @return model Disabled model
+     */
+    function disableModel(
+        Hash modelContentId
+    ) external returns (Model memory model);
 
     /**
      * @notice Receives and stores commitments of testing results. Generates a random challenge in return.
