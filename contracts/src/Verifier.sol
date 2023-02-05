@@ -68,7 +68,8 @@ contract Verifier is IVerifier, Ownable {
     modifier isModelOwner(Hash modelContentId) {
         require(
             contentIdToModel[modelContentId].ownerAddress == msg.sender,
-            "only model owner can execute");
+            "only model owner can execute"
+        );
         _;
     }
 
