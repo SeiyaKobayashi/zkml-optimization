@@ -65,6 +65,13 @@ contract Verifier is IVerifier, Ownable {
         _;
     }
 
+    modifier isModelOwner(Hash modelContentId) {
+        require(
+            contentIdToModel[modelContentId].ownerAddress == msg.sender,
+            "only model owner can execute");
+        _;
+    }
+
     // TODO: enable solhint
     /* solhint-disable */
 
@@ -187,6 +194,7 @@ contract Verifier is IVerifier, Ownable {
     )
         external
         checkIfModelExists(modelContentId)
+        isModelOwner(modelContentId)
         validateModelParameters(modelName, modelDescription)
         returns (Model memory model)
     {
@@ -198,7 +206,12 @@ contract Verifier is IVerifier, Ownable {
 
     function disableModel(
         Hash modelContentId
-    ) external checkIfModelExists(modelContentId) returns (Model memory model) {
+    )
+        external
+        checkIfModelExists(modelContentId)
+        isModelOwner(modelContentId)
+        returns (Model memory model)
+    {
         contentIdToModel[modelContentId].isDisabled = true;
 
         return contentIdToModel[modelContentId];
