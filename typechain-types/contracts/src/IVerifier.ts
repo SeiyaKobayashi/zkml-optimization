@@ -360,7 +360,7 @@ export interface IVerifier extends BaseContract {
     disableModel(
       modelContentId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
-    ): Promise<IVerifier.ModelStructOutput>;
+    ): Promise<void>;
 
     getModel(
       modelContentId: PromiseOrValue<BytesLike>,
@@ -398,7 +398,7 @@ export interface IVerifier extends BaseContract {
       modelName: PromiseOrValue<string>,
       modelDescription: PromiseOrValue<string>,
       overrides?: CallOverrides
-    ): Promise<IVerifier.ModelStructOutput>;
+    ): Promise<void>;
 
     verify(
       commitmentId: PromiseOrValue<BigNumberish>,

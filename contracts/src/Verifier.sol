@@ -132,8 +132,8 @@ contract Verifier is IVerifier, Ownable {
         returns (ModelArrayElement[] memory paginatedModels)
     {
         require(
-            offset >= 0 && offset < models.length,
-            "offset must >= 0 and < length of list of models"
+            offset < models.length,
+            "offset must be < length of list of models"
         );
 
         return _paginateModels(models, offset, limit);
@@ -154,8 +154,8 @@ contract Verifier is IVerifier, Ownable {
             "model owner not found"
         );
         require(
-            offset >= 0 && offset < ownerAddressToModels[ownerAddress].length,
-            "offset must >= 0 and < length of list of models"
+            offset < ownerAddressToModels[ownerAddress].length,
+            "offset must be < length of list of models"
         );
 
         return
@@ -197,25 +197,15 @@ contract Verifier is IVerifier, Ownable {
         checkIfModelExists(modelContentId)
         isModelOwner(modelContentId)
         validateModelParameters(modelName, modelDescription)
-        returns (Model memory model)
     {
         contentIdToModel[modelContentId].name = modelName;
         contentIdToModel[modelContentId].description = modelDescription;
-
-        return contentIdToModel[modelContentId];
     }
 
     function disableModel(
         Hash modelContentId
-    )
-        external
-        checkIfModelExists(modelContentId)
-        isModelOwner(modelContentId)
-        returns (Model memory model)
-    {
+    ) external checkIfModelExists(modelContentId) isModelOwner(modelContentId) {
         contentIdToModel[modelContentId].isDisabled = true;
-
-        return contentIdToModel[modelContentId];
     }
 
     // TODO: enable solhint

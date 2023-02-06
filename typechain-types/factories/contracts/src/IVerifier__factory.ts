@@ -53,40 +53,7 @@ const _abi = [
       },
     ],
     name: "disableModel",
-    outputs: [
-      {
-        components: [
-          {
-            internalType: "IVerifier.Hash",
-            name: "contentId",
-            type: "bytes32",
-          },
-          {
-            internalType: "string",
-            name: "name",
-            type: "string",
-          },
-          {
-            internalType: "string",
-            name: "description",
-            type: "string",
-          },
-          {
-            internalType: "address",
-            name: "ownerAddress",
-            type: "address",
-          },
-          {
-            internalType: "bool",
-            name: "isDisabled",
-            type: "bool",
-          },
-        ],
-        internalType: "struct IVerifier.Model",
-        name: "model",
-        type: "tuple",
-      },
-    ],
+    outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
@@ -324,40 +291,7 @@ const _abi = [
       },
     ],
     name: "updateModel",
-    outputs: [
-      {
-        components: [
-          {
-            internalType: "IVerifier.Hash",
-            name: "contentId",
-            type: "bytes32",
-          },
-          {
-            internalType: "string",
-            name: "name",
-            type: "string",
-          },
-          {
-            internalType: "string",
-            name: "description",
-            type: "string",
-          },
-          {
-            internalType: "address",
-            name: "ownerAddress",
-            type: "address",
-          },
-          {
-            internalType: "bool",
-            name: "isDisabled",
-            type: "bool",
-          },
-        ],
-        internalType: "struct IVerifier.Model",
-        name: "model",
-        type: "tuple",
-      },
-    ],
+    outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },

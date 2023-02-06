@@ -101,23 +101,19 @@ interface IVerifier {
      * @param modelContentId Hash (content ID / address of IPFS) of model
      * @param modelName Updated name of model
      * @param modelDescription Updated description of model
-     * @return model Updated model
      */
     function updateModel(
         Hash modelContentId,
         string calldata modelName,
         string calldata modelDescription
-    ) external returns (Model memory model);
+    ) external;
 
     /**
      * @notice Disable the requested model.
      * @dev Model is logically disabled.
      * @param modelContentId Hash (content ID / address of IPFS) of model
-     * @return model Disabled model
      */
-    function disableModel(
-        Hash modelContentId
-    ) external returns (Model memory model);
+    function disableModel(Hash modelContentId) external;
 
     /**
      * @notice Receives and stores commitments of testing results. Generates a random challenge in return.
