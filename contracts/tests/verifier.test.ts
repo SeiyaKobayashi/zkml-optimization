@@ -1,16 +1,18 @@
 import { expect } from 'chai';
-import { Contract } from 'ethers';
+import { Contract, Signer } from 'ethers';
 import hre from 'hardhat';
 import '@nomicfoundation/hardhat-chai-matchers';
 import { Bytes32 } from 'soltypes';
 
 describe('Verifier Contract', () => {
   let verifier: Contract;
+  let owner: Signer;
   let ownerAddress: string;
+  let anotherAccount: Signer;
 
   beforeEach(async () => {
-    const [owner] = await hre.ethers.getSigners();
-    ownerAddress = owner.address;
+    [owner, anotherAccount] = await hre.ethers.getSigners();
+    ownerAddress = await owner.getAddress();
     const Verifier = await hre.ethers.getContractFactory('Verifier');
     verifier = await Verifier.deploy();
     await verifier.deployed();
@@ -291,9 +293,31 @@ describe('Verifier Contract', () => {
       expect(model.isDisabled).to.equal(false);
     });
 
-    it('failure: model not found', async () => {
+    it('failure: invalid model owner', async () => {
       const testModelContentId: string = new Bytes32(
         '0x1111111111111111111111111111111111111111111111111111111111111112',
+      ).toString();
+
+      await verifier.registerModel(
+        testModelContentId,
+        testModelName,
+        testModelDescription,
+      );
+
+      await expect(
+        verifier
+          .connect(anotherAccount)
+          .updateModel(
+            testModelContentId,
+            updatedTestModelName,
+            updatedTestModelDescription,
+          ),
+      ).to.be.revertedWith('only model owner can execute');
+    });
+
+    it('failure: model not found', async () => {
+      const testModelContentId: string = new Bytes32(
+        '0x1111111111111111111111111111111111111111111111111111111111111113',
       ).toString();
 
       await expect(
@@ -307,7 +331,7 @@ describe('Verifier Contract', () => {
 
     it('failure: empty modelName', async () => {
       const testModelContentId: string = new Bytes32(
-        '0x1111111111111111111111111111111111111111111111111111111111111113',
+        '0x1111111111111111111111111111111111111111111111111111111111111114',
       ).toString();
 
       await verifier.registerModel(
@@ -327,7 +351,7 @@ describe('Verifier Contract', () => {
 
     it('failure: empty modelDescription', async () => {
       const testModelContentId: string = new Bytes32(
-        '0x1111111111111111111111111111111111111111111111111111111111111114',
+        '0x1111111111111111111111111111111111111111111111111111111111111115',
       ).toString();
 
       await verifier.registerModel(
@@ -363,9 +387,25 @@ describe('Verifier Contract', () => {
       expect(model.isDisabled).to.equal(true);
     });
 
-    it('failure: model not found', async () => {
+    it('failure: invalid model owner', async () => {
       const testModelContentId: string = new Bytes32(
         '0x1111111111111111111111111111111111111111111111111111111111111112',
+      ).toString();
+
+      await verifier.registerModel(
+        testModelContentId,
+        testModelName,
+        testModelDescription,
+      );
+
+      await expect(
+        verifier.connect(anotherAccount).disableModel(testModelContentId),
+      ).to.be.revertedWith('only model owner can execute');
+    });
+
+    it('failure: model not found', async () => {
+      const testModelContentId: string = new Bytes32(
+        '0x1111111111111111111111111111111111111111111111111111111111111113',
       ).toString();
 
       await expect(
