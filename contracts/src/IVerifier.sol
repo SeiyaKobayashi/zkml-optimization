@@ -6,22 +6,28 @@ pragma solidity 0.8.17;
  * @author Seiya Kobayashi
  */
 interface IVerifier {
-    /// @dev Holds model info
+    /// @dev Type of keccak256 hash
+    type Hash is bytes32;
+
+    /// @dev Holds model details
     struct Model {
-        string modelName;
-        string modelDescription;
-        bytes32 modelCommitment;
+        Hash contentId;
+        string name;
+        string description;
+        address ownerAddress;
+        bool isDisabled;
     }
 
-    /// @dev Holds hash value of node
-    struct Node {
-        bytes32 value;
+    /// @dev Holds simplified model details
+    struct ModelArrayElement {
+        Hash contentId;
+        string name;
     }
 
-    /// @dev Holds hash value of the matched node and hash values of its Merkle path (to calculate root hash)
+    /// @dev Holds value of the matched leaf node and its Merkle proof (values of its Merkle path)
     struct MerkleProof {
-        Node leaf;
-        Node[] proof;
+        Hash leaf;
+        Hash[] proof;
     }
 
     // TODO: check exact types
@@ -42,34 +48,72 @@ interface IVerifier {
 
     /**
      * @notice Registers a model in the verifier contract.
-     * @dev Store models as a mapping (key = commitment, value = name & description),
-            and as an array of commitments (to be able to get the list of models registered).
-     * @param modelName Name of model to be registered
-     * @param modelDescription Description of model to be registered
-     * @param modelCommitment Hash value of URL (of IPFS) of model to be registered
+     * @dev Registered model is enabled by default.
+     * @param modelContentId Hash (content ID / address of IPFS) of model
+     * @param modelName Name of model
+     * @param modelDescription Description of model
      * @return model Registered model
      */
     function registerModel(
+        Hash modelContentId,
         string calldata modelName,
-        string calldata modelDescription,
-        bytes32 modelCommitment
+        string calldata modelDescription
     ) external returns (Model memory model);
 
     /**
-     * @notice Get the list of models registered.
-     * @dev Would be nice to add params (e.g. 'isAvailable') to 'Model' struct for filtering purpose.
-     * @return models List of models registered
-     */
-    function getModels() external view returns (bytes32[] memory models);
-
-    /**
      * @notice Get info of the requested model.
-     * @param modelCommitment Hash value of URL (of IPFS) of model
+     * @param modelContentId Hash (content ID / address of IPFS) of model
      * @return model Info of the requested model
      */
-    function getModelInfo(
-        bytes32 modelCommitment
+    function getModel(
+        Hash modelContentId
     ) external view returns (Model memory model);
+
+    /**
+     * @notice Get the list of models registered.
+     * @dev Max value of `limit` parameter is 30 for the sake of performance.
+     * @param offset Starting index of array of models to be fetched
+     * @param limit Number of models to fetch
+     * @return models List of models
+     */
+    function getModels(
+        uint32 offset,
+        uint32 limit
+    ) external view returns (ModelArrayElement[] memory models);
+
+    /**
+     * @notice Get the list of models registered by the specified owner.
+     * @dev Max value of `limit` parameter is 30 for the sake of performance.
+     * @param ownerAddress Address of model owner
+     * @param offset Starting index of array of models to be fetched
+     * @param limit Number of models to fetch
+     * @return models List of models
+     */
+    function getModelsByOwnerAddress(
+        address ownerAddress,
+        uint32 offset,
+        uint32 limit
+    ) external view returns (ModelArrayElement[] memory models);
+
+    /**
+     * @notice Update info of the requested model.
+     * @dev 'contentId' & 'ownerAddress' cannot be updated.
+     * @param modelContentId Hash (content ID / address of IPFS) of model
+     * @param modelName Updated name of model
+     * @param modelDescription Updated description of model
+     */
+    function updateModel(
+        Hash modelContentId,
+        string calldata modelName,
+        string calldata modelDescription
+    ) external;
+
+    /**
+     * @notice Disable the requested model.
+     * @dev Model is logically disabled.
+     * @param modelContentId Hash (content ID / address of IPFS) of model
+     */
+    function disableModel(Hash modelContentId) external;
 
     /**
      * @notice Receives and stores commitments of testing results. Generates a random challenge in return.
@@ -96,7 +140,7 @@ interface IVerifier {
     function reveal(
         uint256 commitmentId,
         MerkleProof[] calldata merkleProofs
-    ) external view returns (Node[] memory verifiedNodes);
+    ) external view returns (Hash[] memory verifiedNodes);
 
     /**
      * @notice Receives and verifies ZKPs.

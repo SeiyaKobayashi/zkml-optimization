@@ -12,7 +12,7 @@ All commands in this `README` (except this section) are assumed to be called fro
 
 ```sh
 # cd into this repo
-$ cd traininig-optimization-on-ml-model-with-zkp
+$ cd training-optimization-on-ml-model-with-zkp
 ```
 
 ## Installation

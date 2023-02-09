@@ -40,29 +40,52 @@
     {
       "inputs": [
         {
-          "internalType": "bytes32",
-          "name": "modelCommitment",
+          "internalType": "IVerifier.Hash",
+          "name": "modelContentId",
           "type": "bytes32"
         }
       ],
-      "name": "getModelInfo",
+      "name": "disableModel",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "IVerifier.Hash",
+          "name": "modelContentId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getModel",
       "outputs": [
         {
           "components": [
             {
-              "internalType": "string",
-              "name": "modelName",
-              "type": "string"
-            },
-            {
-              "internalType": "string",
-              "name": "modelDescription",
-              "type": "string"
-            },
-            {
-              "internalType": "bytes32",
-              "name": "modelCommitment",
+              "internalType": "IVerifier.Hash",
+              "name": "contentId",
               "type": "bytes32"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "description",
+              "type": "string"
+            },
+            {
+              "internalType": "address",
+              "name": "ownerAddress",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "isDisabled",
+              "type": "bool"
             }
           ],
           "internalType": "struct IVerifier.Model",
@@ -74,13 +97,36 @@
       "type": "function"
     },
     {
-      "inputs": [],
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "offset",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint32",
+          "name": "limit",
+          "type": "uint32"
+        }
+      ],
       "name": "getModels",
       "outputs": [
         {
-          "internalType": "bytes32[]",
+          "components": [
+            {
+              "internalType": "IVerifier.Hash",
+              "name": "contentId",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            }
+          ],
+          "internalType": "struct IVerifier.ModelArrayElement[]",
           "name": "models",
-          "type": "bytes32[]"
+          "type": "tuple[]"
         }
       ],
       "stateMutability": "view",
@@ -88,6 +134,52 @@
     },
     {
       "inputs": [
+        {
+          "internalType": "address",
+          "name": "ownerAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "uint32",
+          "name": "offset",
+          "type": "uint32"
+        },
+        {
+          "internalType": "uint32",
+          "name": "limit",
+          "type": "uint32"
+        }
+      ],
+      "name": "getModelsByOwnerAddress",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "IVerifier.Hash",
+              "name": "contentId",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            }
+          ],
+          "internalType": "struct IVerifier.ModelArrayElement[]",
+          "name": "models",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "IVerifier.Hash",
+          "name": "modelContentId",
+          "type": "bytes32"
+        },
         {
           "internalType": "string",
           "name": "modelName",
@@ -97,11 +189,6 @@
           "internalType": "string",
           "name": "modelDescription",
           "type": "string"
-        },
-        {
-          "internalType": "bytes32",
-          "name": "modelCommitment",
-          "type": "bytes32"
         }
       ],
       "name": "registerModel",
@@ -109,19 +196,29 @@
         {
           "components": [
             {
-              "internalType": "string",
-              "name": "modelName",
-              "type": "string"
-            },
-            {
-              "internalType": "string",
-              "name": "modelDescription",
-              "type": "string"
-            },
-            {
-              "internalType": "bytes32",
-              "name": "modelCommitment",
+              "internalType": "IVerifier.Hash",
+              "name": "contentId",
               "type": "bytes32"
+            },
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "description",
+              "type": "string"
+            },
+            {
+              "internalType": "address",
+              "name": "ownerAddress",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "isDisabled",
+              "type": "bool"
             }
           ],
           "internalType": "struct IVerifier.Model",
@@ -142,28 +239,14 @@
         {
           "components": [
             {
-              "components": [
-                {
-                  "internalType": "bytes32",
-                  "name": "value",
-                  "type": "bytes32"
-                }
-              ],
-              "internalType": "struct IVerifier.Node",
+              "internalType": "IVerifier.Hash",
               "name": "leaf",
-              "type": "tuple"
+              "type": "bytes32"
             },
             {
-              "components": [
-                {
-                  "internalType": "bytes32",
-                  "name": "value",
-                  "type": "bytes32"
-                }
-              ],
-              "internalType": "struct IVerifier.Node[]",
+              "internalType": "IVerifier.Hash[]",
               "name": "proof",
-              "type": "tuple[]"
+              "type": "bytes32[]"
             }
           ],
           "internalType": "struct IVerifier.MerkleProof[]",
@@ -174,19 +257,35 @@
       "name": "reveal",
       "outputs": [
         {
-          "components": [
-            {
-              "internalType": "bytes32",
-              "name": "value",
-              "type": "bytes32"
-            }
-          ],
-          "internalType": "struct IVerifier.Node[]",
+          "internalType": "IVerifier.Hash[]",
           "name": "verifiedNodes",
-          "type": "tuple[]"
+          "type": "bytes32[]"
         }
       ],
       "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "IVerifier.Hash",
+          "name": "modelContentId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "string",
+          "name": "modelName",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "modelDescription",
+          "type": "string"
+        }
+      ],
+      "name": "updateModel",
+      "outputs": [],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {

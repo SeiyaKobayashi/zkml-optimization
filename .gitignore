@@ -374,6 +374,10 @@ node_modules
 bin_output
 logs
 
+# coverage reports
+coverage
+coverage.json
+
 # misc
 artifacts/build-info
 cache
