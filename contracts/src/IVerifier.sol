@@ -24,12 +24,6 @@ interface IVerifier {
         string name;
     }
 
-    /// @dev Holds value of the matched leaf node and its Merkle proof (values of its Merkle path)
-    struct MerkleProof {
-        Hash leaf;
-        Hash[] proof;
-    }
-
     // TODO: check exact types
     /// @dev Holds ZKP
     struct Zkp {
@@ -47,7 +41,7 @@ interface IVerifier {
     }
 
     /**
-     * @notice Registers a model in the verifier contract.
+     * @notice Register a model in the verifier contract.
      * @dev Registered model is enabled by default.
      * @param modelContentId Hash (content ID / address of IPFS) of model
      * @param modelName Name of model
@@ -116,31 +110,49 @@ interface IVerifier {
     function disableModel(Hash modelContentId) external;
 
     /**
-     * @notice Receives and stores commitments of testing results. Generates a random challenge in return.
-     * @dev Need to consider setting thresholds when generating a random challenge. Fine-tune them accordingly.
-     * @param commitmentModel Hash value of URL of targeted model
-     * @param commitmentData Hash value of testing data
-     * @param commitmentResults Root hash value of Merkle tree of testing results
-     * @return commitmentId commitment ID (need to provide when calling 'reveal()' & 'verify()')
-     * @return challenge Random challenge
+     * @notice Store commit of testing results, and generate a challenge in return.
+     * @dev 'commitId' is generated from 'modelContentId', 'merkleRoot' and sender's address.
+     * @param _modelContentId Hash (content ID / address of IPFS) of model
+     * @param _merkleRoot Root hash of Merkle tree of testing results
+     * @return commitId Commit ID
+     * @return challenge Challenge
      */
     function commit(
-        bytes32 commitmentModel,
-        bytes32 commitmentData,
-        bytes32 commitmentResults
-    ) external returns (uint256 commitmentId, bytes32 challenge);
+        Hash _modelContentId,
+        Hash _merkleRoot
+    ) external returns (Hash commitId, bytes memory challenge);
 
     /**
-     * @notice Receives and verifies Merkle proofs matched with the random challenge.
-     * @dev Use https://docs.openzeppelin.com/contracts/4.x/api/utils#MerkleProof to verify Merkle proofs.
-     * @param commitmentId commitment ID
-     * @param merkleProofs Array of Merkle proofs matched with the random challenge
-     * @return verifiedNodes Array of hash values of the verified nodes
+     * @notice Update challenge of the specified commit.
+     * @param _commitId Commit ID
+     * @return challenge Updated challenge
+     */
+    function updateChallenge(
+        Hash _commitId
+    ) external returns (bytes memory challenge);
+
+    /**
+     * @notice Update the number of digits of challenge.
+     * @dev This function can only be callable by contract owner.
+     *      Already generated (committed) challenges must not be modified.
+     *      Max length is 64, because bytes32 string consists of 64 characters (excluding prefix '0x').
+     * @param _challengeLength Length of challenge
+     */
+    function updateChallengeLength(uint8 _challengeLength) external;
+
+    /**
+     * @notice Verify Merkle proofs matched with the challenge.
+     * @param _commitId commit ID
+     * @param _merkleProofs Array of Merkle proofs
+     * @param _proofFlags Array of proof flags
+     * @param _leaves Array of Merkle leaves
      */
     function reveal(
-        uint256 commitmentId,
-        MerkleProof[] calldata merkleProofs
-    ) external view returns (Hash[] memory verifiedNodes);
+        Hash _commitId,
+        bytes32[] calldata _merkleProofs,
+        bool[] calldata _proofFlags,
+        bytes32[] memory _leaves
+    ) external returns (bool isRevealed);
 
     /**
      * @notice Receives and verifies ZKPs.

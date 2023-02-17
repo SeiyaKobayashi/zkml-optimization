@@ -54,16 +54,6 @@ export declare namespace IVerifier {
     name: string;
   };
 
-  export type MerkleProofStruct = {
-    leaf: PromiseOrValue<BytesLike>;
-    proof: PromiseOrValue<BytesLike>[];
-  };
-
-  export type MerkleProofStructOutput = [string, string[]] & {
-    leaf: string;
-    proof: string[];
-  };
-
   export type ZkpStruct = {
     a: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>];
     b: [
@@ -99,7 +89,7 @@ export declare namespace IVerifier {
 
 export interface VerifierInterface extends utils.Interface {
   functions: {
-    "commit(bytes32,bytes32,bytes32)": FunctionFragment;
+    "commit(bytes32,bytes32)": FunctionFragment;
     "disableModel(bytes32)": FunctionFragment;
     "getModel(bytes32)": FunctionFragment;
     "getModels(uint32,uint32)": FunctionFragment;
@@ -107,8 +97,10 @@ export interface VerifierInterface extends utils.Interface {
     "owner()": FunctionFragment;
     "registerModel(bytes32,string,string)": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
-    "reveal(uint256,(bytes32,bytes32[])[])": FunctionFragment;
+    "reveal(bytes32,bytes32[],bool[],bytes32[])": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
+    "updateChallenge(bytes32)": FunctionFragment;
+    "updateChallengeLength(uint8)": FunctionFragment;
     "updateModel(bytes32,string,string)": FunctionFragment;
     "verify(uint256,(uint256[2],uint256[2][2],uint256[2],uint256[16])[])": FunctionFragment;
   };
@@ -125,17 +117,15 @@ export interface VerifierInterface extends utils.Interface {
       | "renounceOwnership"
       | "reveal"
       | "transferOwnership"
+      | "updateChallenge"
+      | "updateChallengeLength"
       | "updateModel"
       | "verify"
   ): FunctionFragment;
 
   encodeFunctionData(
     functionFragment: "commit",
-    values: [
-      PromiseOrValue<BytesLike>,
-      PromiseOrValue<BytesLike>,
-      PromiseOrValue<BytesLike>
-    ]
+    values: [PromiseOrValue<BytesLike>, PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(
     functionFragment: "disableModel",
@@ -172,11 +162,24 @@ export interface VerifierInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "reveal",
-    values: [PromiseOrValue<BigNumberish>, IVerifier.MerkleProofStruct[]]
+    values: [
+      PromiseOrValue<BytesLike>,
+      PromiseOrValue<BytesLike>[],
+      PromiseOrValue<boolean>[],
+      PromiseOrValue<BytesLike>[]
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "updateChallenge",
+    values: [PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "updateChallengeLength",
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "updateModel",
@@ -217,23 +220,71 @@ export interface VerifierInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "updateChallenge",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "updateChallengeLength",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "updateModel",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "verify", data: BytesLike): Result;
 
   events: {
+    "ChallengeUpdated(bytes32,address)": EventFragment;
+    "CommitAdded(bytes32,address)": EventFragment;
+    "CommitRevealed(bytes32,address)": EventFragment;
     "ModelDisabled(bytes32,address)": EventFragment;
     "ModelRegistered(bytes32,address)": EventFragment;
     "ModelUpdated(bytes32,address,string,string)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "ChallengeUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "CommitAdded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "CommitRevealed"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ModelDisabled"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ModelRegistered"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ModelUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
 }
+
+export interface ChallengeUpdatedEventObject {
+  commitId: string;
+  proverAddress: string;
+}
+export type ChallengeUpdatedEvent = TypedEvent<
+  [string, string],
+  ChallengeUpdatedEventObject
+>;
+
+export type ChallengeUpdatedEventFilter =
+  TypedEventFilter<ChallengeUpdatedEvent>;
+
+export interface CommitAddedEventObject {
+  commitId: string;
+  proverAddress: string;
+}
+export type CommitAddedEvent = TypedEvent<
+  [string, string],
+  CommitAddedEventObject
+>;
+
+export type CommitAddedEventFilter = TypedEventFilter<CommitAddedEvent>;
+
+export interface CommitRevealedEventObject {
+  commitId: string;
+  proverAddress: string;
+}
+export type CommitRevealedEvent = TypedEvent<
+  [string, string],
+  CommitRevealedEventObject
+>;
+
+export type CommitRevealedEventFilter = TypedEventFilter<CommitRevealedEvent>;
 
 export interface ModelDisabledEventObject {
   contentId: string;
@@ -310,9 +361,8 @@ export interface Verifier extends BaseContract {
 
   functions: {
     commit(
-      commitmentModel: PromiseOrValue<BytesLike>,
-      commitmentData: PromiseOrValue<BytesLike>,
-      commitmentResults: PromiseOrValue<BytesLike>,
+      _modelContentId: PromiseOrValue<BytesLike>,
+      _merkleRoot: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -363,13 +413,25 @@ export interface Verifier extends BaseContract {
     ): Promise<ContractTransaction>;
 
     reveal(
-      commitmentId: PromiseOrValue<BigNumberish>,
-      merkleProofs: IVerifier.MerkleProofStruct[],
-      overrides?: CallOverrides
-    ): Promise<[string[]] & { verifiedNodes: string[] }>;
+      _commitId: PromiseOrValue<BytesLike>,
+      _merkleProofs: PromiseOrValue<BytesLike>[],
+      _proofFlags: PromiseOrValue<boolean>[],
+      _leaves: PromiseOrValue<BytesLike>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     transferOwnership(
       newOwner: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    updateChallenge(
+      _commitId: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    updateChallengeLength(
+      _challengeLength: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -388,9 +450,8 @@ export interface Verifier extends BaseContract {
   };
 
   commit(
-    commitmentModel: PromiseOrValue<BytesLike>,
-    commitmentData: PromiseOrValue<BytesLike>,
-    commitmentResults: PromiseOrValue<BytesLike>,
+    _modelContentId: PromiseOrValue<BytesLike>,
+    _merkleRoot: PromiseOrValue<BytesLike>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -431,13 +492,25 @@ export interface Verifier extends BaseContract {
   ): Promise<ContractTransaction>;
 
   reveal(
-    commitmentId: PromiseOrValue<BigNumberish>,
-    merkleProofs: IVerifier.MerkleProofStruct[],
-    overrides?: CallOverrides
-  ): Promise<string[]>;
+    _commitId: PromiseOrValue<BytesLike>,
+    _merkleProofs: PromiseOrValue<BytesLike>[],
+    _proofFlags: PromiseOrValue<boolean>[],
+    _leaves: PromiseOrValue<BytesLike>[],
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   transferOwnership(
     newOwner: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  updateChallenge(
+    _commitId: PromiseOrValue<BytesLike>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  updateChallengeLength(
+    _challengeLength: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -456,13 +529,10 @@ export interface Verifier extends BaseContract {
 
   callStatic: {
     commit(
-      commitmentModel: PromiseOrValue<BytesLike>,
-      commitmentData: PromiseOrValue<BytesLike>,
-      commitmentResults: PromiseOrValue<BytesLike>,
+      _modelContentId: PromiseOrValue<BytesLike>,
+      _merkleRoot: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, string] & { commitmentId: BigNumber; challenge: string }
-    >;
+    ): Promise<[string, string] & { commitId: string; challenge: string }>;
 
     disableModel(
       modelContentId: PromiseOrValue<BytesLike>,
@@ -499,13 +569,25 @@ export interface Verifier extends BaseContract {
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
     reveal(
-      commitmentId: PromiseOrValue<BigNumberish>,
-      merkleProofs: IVerifier.MerkleProofStruct[],
+      _commitId: PromiseOrValue<BytesLike>,
+      _merkleProofs: PromiseOrValue<BytesLike>[],
+      _proofFlags: PromiseOrValue<boolean>[],
+      _leaves: PromiseOrValue<BytesLike>[],
       overrides?: CallOverrides
-    ): Promise<string[]>;
+    ): Promise<boolean>;
 
     transferOwnership(
       newOwner: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    updateChallenge(
+      _commitId: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    updateChallengeLength(
+      _challengeLength: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -524,6 +606,33 @@ export interface Verifier extends BaseContract {
   };
 
   filters: {
+    "ChallengeUpdated(bytes32,address)"(
+      commitId?: PromiseOrValue<BytesLike> | null,
+      proverAddress?: PromiseOrValue<string> | null
+    ): ChallengeUpdatedEventFilter;
+    ChallengeUpdated(
+      commitId?: PromiseOrValue<BytesLike> | null,
+      proverAddress?: PromiseOrValue<string> | null
+    ): ChallengeUpdatedEventFilter;
+
+    "CommitAdded(bytes32,address)"(
+      commitId?: PromiseOrValue<BytesLike> | null,
+      proverAddress?: PromiseOrValue<string> | null
+    ): CommitAddedEventFilter;
+    CommitAdded(
+      commitId?: PromiseOrValue<BytesLike> | null,
+      proverAddress?: PromiseOrValue<string> | null
+    ): CommitAddedEventFilter;
+
+    "CommitRevealed(bytes32,address)"(
+      commitId?: PromiseOrValue<BytesLike> | null,
+      proverAddress?: PromiseOrValue<string> | null
+    ): CommitRevealedEventFilter;
+    CommitRevealed(
+      commitId?: PromiseOrValue<BytesLike> | null,
+      proverAddress?: PromiseOrValue<string> | null
+    ): CommitRevealedEventFilter;
+
     "ModelDisabled(bytes32,address)"(
       contentId?: PromiseOrValue<BytesLike> | null,
       ownerAddress?: PromiseOrValue<string> | null
@@ -567,9 +676,8 @@ export interface Verifier extends BaseContract {
 
   estimateGas: {
     commit(
-      commitmentModel: PromiseOrValue<BytesLike>,
-      commitmentData: PromiseOrValue<BytesLike>,
-      commitmentResults: PromiseOrValue<BytesLike>,
+      _modelContentId: PromiseOrValue<BytesLike>,
+      _merkleRoot: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -610,13 +718,25 @@ export interface Verifier extends BaseContract {
     ): Promise<BigNumber>;
 
     reveal(
-      commitmentId: PromiseOrValue<BigNumberish>,
-      merkleProofs: IVerifier.MerkleProofStruct[],
-      overrides?: CallOverrides
+      _commitId: PromiseOrValue<BytesLike>,
+      _merkleProofs: PromiseOrValue<BytesLike>[],
+      _proofFlags: PromiseOrValue<boolean>[],
+      _leaves: PromiseOrValue<BytesLike>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     transferOwnership(
       newOwner: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    updateChallenge(
+      _commitId: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    updateChallengeLength(
+      _challengeLength: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -636,9 +756,8 @@ export interface Verifier extends BaseContract {
 
   populateTransaction: {
     commit(
-      commitmentModel: PromiseOrValue<BytesLike>,
-      commitmentData: PromiseOrValue<BytesLike>,
-      commitmentResults: PromiseOrValue<BytesLike>,
+      _modelContentId: PromiseOrValue<BytesLike>,
+      _merkleRoot: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -679,13 +798,25 @@ export interface Verifier extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     reveal(
-      commitmentId: PromiseOrValue<BigNumberish>,
-      merkleProofs: IVerifier.MerkleProofStruct[],
-      overrides?: CallOverrides
+      _commitId: PromiseOrValue<BytesLike>,
+      _merkleProofs: PromiseOrValue<BytesLike>[],
+      _proofFlags: PromiseOrValue<boolean>[],
+      _leaves: PromiseOrValue<BytesLike>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     transferOwnership(
       newOwner: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateChallenge(
+      _commitId: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateChallengeLength(
+      _challengeLength: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

@@ -13,32 +13,27 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "bytes32",
-        name: "commitmentModel",
+        internalType: "IVerifier.Hash",
+        name: "_modelContentId",
         type: "bytes32",
       },
       {
-        internalType: "bytes32",
-        name: "commitmentData",
-        type: "bytes32",
-      },
-      {
-        internalType: "bytes32",
-        name: "commitmentResults",
+        internalType: "IVerifier.Hash",
+        name: "_merkleRoot",
         type: "bytes32",
       },
     ],
     name: "commit",
     outputs: [
       {
-        internalType: "uint256",
-        name: "commitmentId",
-        type: "uint256",
+        internalType: "IVerifier.Hash",
+        name: "commitId",
+        type: "bytes32",
       },
       {
-        internalType: "bytes32",
+        internalType: "bytes",
         name: "challenge",
-        type: "bytes32",
+        type: "bytes",
       },
     ],
     stateMutability: "nonpayable",
@@ -239,37 +234,67 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "uint256",
-        name: "commitmentId",
-        type: "uint256",
+        internalType: "IVerifier.Hash",
+        name: "_commitId",
+        type: "bytes32",
       },
       {
-        components: [
-          {
-            internalType: "IVerifier.Hash",
-            name: "leaf",
-            type: "bytes32",
-          },
-          {
-            internalType: "IVerifier.Hash[]",
-            name: "proof",
-            type: "bytes32[]",
-          },
-        ],
-        internalType: "struct IVerifier.MerkleProof[]",
-        name: "merkleProofs",
-        type: "tuple[]",
+        internalType: "bytes32[]",
+        name: "_merkleProofs",
+        type: "bytes32[]",
+      },
+      {
+        internalType: "bool[]",
+        name: "_proofFlags",
+        type: "bool[]",
+      },
+      {
+        internalType: "bytes32[]",
+        name: "_leaves",
+        type: "bytes32[]",
       },
     ],
     name: "reveal",
     outputs: [
       {
-        internalType: "IVerifier.Hash[]",
-        name: "verifiedNodes",
-        type: "bytes32[]",
+        internalType: "bool",
+        name: "isRevealed",
+        type: "bool",
       },
     ],
-    stateMutability: "view",
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "IVerifier.Hash",
+        name: "_commitId",
+        type: "bytes32",
+      },
+    ],
+    name: "updateChallenge",
+    outputs: [
+      {
+        internalType: "bytes",
+        name: "challenge",
+        type: "bytes",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint8",
+        name: "_challengeLength",
+        type: "uint8",
+      },
+    ],
+    name: "updateChallengeLength",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {

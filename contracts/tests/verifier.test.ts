@@ -14,7 +14,7 @@ describe('Verifier Contract', () => {
     [owner, anotherAccount] = await hre.ethers.getSigners();
     ownerAddress = await owner.getAddress();
     const Verifier = await hre.ethers.getContractFactory('Verifier');
-    verifier = await Verifier.deploy();
+    verifier = await Verifier.deploy(3);
     await verifier.deployed();
   });
 
