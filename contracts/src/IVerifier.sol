@@ -24,6 +24,16 @@ interface IVerifier {
         string name;
     }
 
+    /// @dev Holds commit details
+    struct Commit {
+        Hash id;
+        Hash modelContentId;
+        Hash merkleRoot;
+        bytes challenge;
+        address proverAddress;
+        bool isRevealed;
+    }
+
     // TODO: check exact types
     /// @dev Holds ZKP
     struct Zkp {
@@ -123,6 +133,36 @@ interface IVerifier {
     ) external returns (Hash commitId, bytes memory challenge);
 
     /**
+     * @notice Get commit details.
+     * @param _commitId Commit ID
+     */
+    function getCommit(Hash _commitId) external view returns (Commit memory);
+
+    /**
+     * @notice Get commit IDs of the specified model.
+     * @param _modelContentId Hash (content ID / address of IPFS) of model
+     * @param _offset Starting index of array of commits to be fetched
+     * @param _limit Number of commits to fetch
+     */
+    function getCommitsOfModel(
+        Hash _modelContentId,
+        uint32 _offset,
+        uint32 _limit
+    ) external view returns (Hash[] memory);
+
+    /**
+     * @notice Get commit IDs of the specified prover.
+     * @param _proverAddress Address of prover
+     * @param _offset Starting index of array of commits to be fetched
+     * @param _limit Number of commits to fetch
+     */
+    function getCommitsOfProver(
+        address _proverAddress,
+        uint32 _offset,
+        uint32 _limit
+    ) external view returns (Hash[] memory);
+
+    /**
      * @notice Update challenge of the specified commit.
      * @param _commitId Commit ID
      * @return challenge Updated challenge
@@ -132,10 +172,16 @@ interface IVerifier {
     ) external returns (bytes memory challenge);
 
     /**
-     * @notice Update the number of digits of challenge.
+     * @notice Get the length (number of digits) of challenge.
+     * @dev This function can only be callable by contract owner.
+     */
+    function getChallengeLength() external view returns (uint8);
+
+    /**
+     * @notice Update the length (number of digits) of challenge.
      * @dev This function can only be callable by contract owner.
      *      Already generated (committed) challenges must not be modified.
-     *      Max length is 64, because bytes32 string consists of 64 characters (excluding prefix '0x').
+     *      Max length is 32, because bytes32 obviously consists of 32 bytes.
      * @param _challengeLength Length of challenge
      */
     function updateChallengeLength(uint8 _challengeLength) external;
@@ -152,7 +198,7 @@ interface IVerifier {
         bytes32[] calldata _merkleProofs,
         bool[] calldata _proofFlags,
         bytes32[] memory _leaves
-    ) external returns (bool isRevealed);
+    ) external returns (bool commitRevealed);
 
     /**
      * @notice Receives and verifies ZKPs.

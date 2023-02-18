@@ -1,41 +1,21 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.17;
 
+import "./Bytes.sol";
+
+/**
+ * @title Library of challenge generation algorithm
+ * @author Seiya Kobayashi
+ */
 library Challenge {
-    /**
-     * @dev Get tail of hash (of type bytes32)
-     * @param _hash Hash value
-     * @param _lengthFromTail Length of resulting bytes
-     * @return tail Tail of hash of the specified length
-     */
-    function getTailOfHash(
-        bytes32 _hash,
-        uint _lengthFromTail
-    )
-        internal
-        pure
-        returns (bytes memory tail)
-    {
-        bytes memory _tail;
-        uint _hashLength = _hash.length;
-        uint _startingIndex = _hashLength - _lengthFromTail;
-
-        for (uint i=_startingIndex; i<_hashLength; i++) {
-            _tail[i - _startingIndex] = _hash[i];
-        }
-
-        return _tail;
-    }
-
-    /// @dev Returns true if two bytes are equal
-    function equals(
-        bytes memory a,
-        bytes memory b
-    )
-        internal
-        pure
-        returns (bool)
-    {
-        return keccak256(a) == keccak256(b);
+    /// @dev Generate a random challenge of the length of 'challengeLength'.
+    function generateChallenge(
+        uint8 challengeLength
+    ) internal view returns (bytes memory challenge) {
+        return
+            Bytes.getTailOfHash(
+                keccak256(abi.encodePacked(block.timestamp, msg.sender)),
+                challengeLength
+            );
     }
 }

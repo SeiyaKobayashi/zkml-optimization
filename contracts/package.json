@@ -10,10 +10,10 @@
     "compile-sol": "hardhat compile",
     "compile-ts": "tsc --pretty --noEmit",
     "lint": "run-s lint-sol lint-ts",
-    "lint-sol": "solhint -c .solhint.json --ignore-path .solhintignore --fix **/*.sol",
+    "lint-sol": "solhint -c .solhint.json --ignore-path .solhintignore --fix src/*.sol src/**/*.sol",
     "lint-ts": "eslint --fix --ext .ts,.test.ts .",
     "prettify": "run-s prettify-sol prettify-ts",
-    "prettify-sol": "prettier -w **/*.sol",
+    "prettify-sol": "prettier -w src/*.sol src/**/*.sol",
     "prettify-ts": "prettier -w **/*.ts",
     "test": "REPORT_GAS=true hardhat test --typecheck",
     "coverage": "hardhat coverage"

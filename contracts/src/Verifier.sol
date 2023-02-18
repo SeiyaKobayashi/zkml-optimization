@@ -2,29 +2,17 @@
 pragma solidity 0.8.17;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 import "./IVerifier.sol";
+import "./libraries/Bytes.sol";
 import "./libraries/Challenge.sol";
+import "./libraries/MerkleTree.sol";
 
 /**
  * @title Verifier contract
  * @author Seiya Kobayashi
  */
 contract Verifier is IVerifier, Ownable {
-    /*
-        types
-    */
-
-    struct Commit {
-        Hash id;
-        Hash modelContentId;
-        Hash merkleRoot;
-        bytes challenge;
-        address proverAddress;
-        bool isRevealed;
-    }
-
     /*
         state variables
     */
@@ -93,8 +81,28 @@ contract Verifier is IVerifier, Ownable {
         _;
     }
 
+    modifier validateOffsetParameter(uint32 offset, uint length) {
+        if (length > 0) {
+            require(
+                offset < length,
+                "offset must be < length of list of items"
+            );
+        } else {
+            require(offset == 0, "offset must be 0 when no items exist");
+        }
+        _;
+    }
+
     modifier validateLimitParameter(uint32 limit) {
         require(limit > 0 && limit <= 30, "limit must be > 0 and <= 30");
+        _;
+    }
+
+    modifier checkIfModelOwnerExists(address ownerAddress) {
+        require(
+            ownerAddressToModels[ownerAddress].length != 0,
+            "model owner not found"
+        );
         _;
     }
 
@@ -108,17 +116,14 @@ contract Verifier is IVerifier, Ownable {
 
     modifier checkIfCommitExists(Hash commitId) {
         require(
-            Hash.unwrap(commitIdToCommit[commitId].id).length != 0,
+            Hash.unwrap(commitIdToCommit[commitId].id) != "",
             "commit not found"
         );
         _;
     }
 
-    modifier isProver(Hash commitId) {
-        require(
-            commitIdToCommit[commitId].proverAddress == msg.sender,
-            "only committer can execute"
-        );
+    modifier isValidProver(address proverAddress) {
+        require(proverAddress == msg.sender, "invalid prover");
         _;
     }
 
@@ -181,14 +186,10 @@ contract Verifier is IVerifier, Ownable {
     )
         external
         view
+        validateOffsetParameter(offset, models.length)
         validateLimitParameter(limit)
         returns (ModelArrayElement[] memory paginatedModels)
     {
-        require(
-            offset < models.length,
-            "offset must be < length of list of models"
-        );
-
         return _paginateModels(models, offset, limit);
     }
 
@@ -199,18 +200,14 @@ contract Verifier is IVerifier, Ownable {
     )
         external
         view
+        checkIfModelOwnerExists(ownerAddress)
+        validateOffsetParameter(
+            offset,
+            ownerAddressToModels[ownerAddress].length
+        )
         validateLimitParameter(limit)
         returns (ModelArrayElement[] memory paginatedModels)
     {
-        require(
-            ownerAddressToModels[ownerAddress].length != 0,
-            "model owner not found"
-        );
-        require(
-            offset < ownerAddressToModels[ownerAddress].length,
-            "offset must be < length of list of models"
-        );
-
         return
             _paginateModels(ownerAddressToModels[ownerAddress], offset, limit);
     }
@@ -269,18 +266,8 @@ contract Verifier is IVerifier, Ownable {
         checkIfModelExists(_modelContentId)
         returns (Hash commitId, bytes memory challenge)
     {
-        Hash _commitId = Hash.wrap(
-            keccak256(
-                abi.encodePacked(_modelContentId, _merkleRoot, msg.sender)
-            )
-        );
-
-        require(
-            Hash.unwrap(commitIdToCommit[_commitId].id).length == 0,
-            "commit already exists"
-        );
-
-        bytes memory _challenge = _generateChallenge();
+        Hash _commitId = _generateCommitId(_modelContentId, _merkleRoot);
+        bytes memory _challenge = Challenge.generateChallenge(challengeLength);
 
         commits[_modelContentId].push(_commitId);
         proverAddressToCommits[msg.sender].push(_commitId);
@@ -298,15 +285,103 @@ contract Verifier is IVerifier, Ownable {
         return (_commitId, _challenge);
     }
 
+    /// @dev Duplicated commit ID is not allowed
+    function _generateCommitId(
+        Hash _modelContentId,
+        Hash _merkleRoot
+    ) internal view returns (Hash commitId) {
+        Hash _commitId = Hash.wrap(
+            keccak256(
+                abi.encodePacked(_modelContentId, _merkleRoot, msg.sender)
+            )
+        );
+
+        require(
+            Hash.unwrap(commitIdToCommit[_commitId].id) == "",
+            "commit already exists"
+        );
+
+        return _commitId;
+    }
+
+    function getCommit(
+        Hash _commitId
+    )
+        external
+        view
+        checkIfCommitExists(_commitId)
+        onlyOwner
+        returns (Commit memory)
+    {
+        return commitIdToCommit[_commitId];
+    }
+
+    function getCommitsOfModel(
+        Hash _modelContentId,
+        uint32 _offset,
+        uint32 _limit
+    )
+        external
+        view
+        checkIfModelExists(_modelContentId)
+        validateOffsetParameter(_offset, commits[_modelContentId].length)
+        validateLimitParameter(_limit)
+        onlyOwner
+        returns (Hash[] memory)
+    {
+        return _paginateCommits(commits[_modelContentId], _offset, _limit);
+    }
+
+    function getCommitsOfProver(
+        address _proverAddress,
+        uint32 _offset,
+        uint32 _limit
+    )
+        external
+        view
+        validateOffsetParameter(
+            _offset,
+            proverAddressToCommits[_proverAddress].length
+        )
+        validateLimitParameter(_limit)
+        isValidProver(_proverAddress)
+        returns (Hash[] memory)
+    {
+        return
+            _paginateCommits(
+                proverAddressToCommits[_proverAddress],
+                _offset,
+                _limit
+            );
+    }
+
+    /// @dev Paginate commits given array of commit IDs, offset and limit.
+    function _paginateCommits(
+        Hash[] memory _commitIds,
+        uint32 _offset,
+        uint32 _limit
+    ) internal pure returns (Hash[] memory paginatedCommits) {
+        if (_offset + _limit > _commitIds.length) {
+            _limit = uint32(_commitIds.length - _offset);
+        }
+
+        Hash[] memory _paginatedCommits = new Hash[](_limit);
+        for (uint32 i = 0; i < _limit; i++) {
+            _paginatedCommits[i] = _commitIds[_offset + i];
+        }
+
+        return _paginatedCommits;
+    }
+
     function updateChallenge(
         Hash _commitId
     )
         external
         checkIfCommitExists(_commitId)
-        isProver(_commitId)
+        isValidProver(commitIdToCommit[_commitId].proverAddress)
         returns (bytes memory challenge)
     {
-        bytes memory _challenge = _generateChallenge();
+        bytes memory _challenge = Challenge.generateChallenge(challengeLength);
         commitIdToCommit[_commitId].challenge = _challenge;
 
         emit ChallengeUpdated(_commitId, msg.sender);
@@ -314,21 +389,12 @@ contract Verifier is IVerifier, Ownable {
         return _challenge;
     }
 
-    /// @dev Generate a random challenge of the length of 'challengeLength'.
-    function _generateChallenge()
-        internal
-        view
-        returns (bytes memory challenge)
-    {
-        return
-            Challenge.getTailOfHash(
-                keccak256(abi.encodePacked(block.number, msg.sender)),
-                challengeLength
-            );
+    function getChallengeLength() external view onlyOwner returns (uint8) {
+        return challengeLength;
     }
 
     function updateChallengeLength(uint8 _challengeLength) external onlyOwner {
-        require(_challengeLength <= 64, "Length of challenge must be <= 64");
+        require(_challengeLength <= 32, "length of challenge must be <= 32");
 
         challengeLength = _challengeLength;
     }
@@ -338,16 +404,21 @@ contract Verifier is IVerifier, Ownable {
         bytes32[] calldata _merkleProofs,
         bool[] calldata _proofFlags,
         bytes32[] memory _leaves
-    ) external returns (bool isRevealed) {
+    )
+        external
+        checkIfCommitExists(_commitId)
+        isValidProver(commitIdToCommit[_commitId].proverAddress)
+        returns (bool commitRevealed)
+    {
         bytes memory _challenge = commitIdToCommit[_commitId].challenge;
-        bool _leavesVerified = _verifyLeaves(_challenge, _leaves);
+        bool _leavesVerified = MerkleTree.verifyLeaves(_challenge, _leaves);
 
         require(_leavesVerified == true, "invalid leaves");
 
         bytes32 _merkleRoot = Hash.unwrap(
             commitIdToCommit[_commitId].merkleRoot
         );
-        bool _commitRevealed = _verifyMerkleProofs(
+        bool _commitRevealed = MerkleTree.verifyMerkleProofs(
             _merkleProofs,
             _proofFlags,
             _merkleRoot,
@@ -361,40 +432,6 @@ contract Verifier is IVerifier, Ownable {
         emit CommitRevealed(_commitId, msg.sender);
 
         return _commitRevealed;
-    }
-
-    /// @dev Check if every leaf ends with the given challenge
-    function _verifyLeaves(
-        bytes memory _challenge,
-        bytes32[] memory _leaves
-    ) internal pure returns (bool) {
-        for (uint i = 0; i < _leaves.length; i++) {
-            bytes memory _leafTail = Challenge.getTailOfHash(
-                _leaves[i],
-                _challenge.length
-            );
-            if (!Challenge.equals(_leafTail, _challenge)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /// @dev Verify Merkle proofs
-    function _verifyMerkleProofs(
-        bytes32[] calldata merkleProofs,
-        bool[] calldata proofFlags,
-        bytes32 merkleRoot,
-        bytes32[] memory leaves
-    ) internal pure returns (bool) {
-        return
-            MerkleProof.multiProofVerifyCalldata(
-                merkleProofs,
-                proofFlags,
-                merkleRoot,
-                leaves
-            );
     }
 
     // TODO: enable solhint

@@ -53,6 +53,128 @@ const _abi = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "getChallengeLength",
+    outputs: [
+      {
+        internalType: "uint8",
+        name: "",
+        type: "uint8",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "IVerifier.Hash",
+        name: "_commitId",
+        type: "bytes32",
+      },
+    ],
+    name: "getCommit",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "IVerifier.Hash",
+            name: "id",
+            type: "bytes32",
+          },
+          {
+            internalType: "IVerifier.Hash",
+            name: "modelContentId",
+            type: "bytes32",
+          },
+          {
+            internalType: "IVerifier.Hash",
+            name: "merkleRoot",
+            type: "bytes32",
+          },
+          {
+            internalType: "bytes",
+            name: "challenge",
+            type: "bytes",
+          },
+          {
+            internalType: "address",
+            name: "proverAddress",
+            type: "address",
+          },
+          {
+            internalType: "bool",
+            name: "isRevealed",
+            type: "bool",
+          },
+        ],
+        internalType: "struct IVerifier.Commit",
+        name: "",
+        type: "tuple",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "IVerifier.Hash",
+        name: "_modelContentId",
+        type: "bytes32",
+      },
+      {
+        internalType: "uint32",
+        name: "_offset",
+        type: "uint32",
+      },
+      {
+        internalType: "uint32",
+        name: "_limit",
+        type: "uint32",
+      },
+    ],
+    name: "getCommitsOfModel",
+    outputs: [
+      {
+        internalType: "IVerifier.Hash[]",
+        name: "",
+        type: "bytes32[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_proverAddress",
+        type: "address",
+      },
+      {
+        internalType: "uint32",
+        name: "_offset",
+        type: "uint32",
+      },
+      {
+        internalType: "uint32",
+        name: "_limit",
+        type: "uint32",
+      },
+    ],
+    name: "getCommitsOfProver",
+    outputs: [
+      {
+        internalType: "IVerifier.Hash[]",
+        name: "",
+        type: "bytes32[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "IVerifier.Hash",
@@ -258,7 +380,7 @@ const _abi = [
     outputs: [
       {
         internalType: "bool",
-        name: "isRevealed",
+        name: "commitRevealed",
         type: "bool",
       },
     ],
