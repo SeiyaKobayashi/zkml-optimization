@@ -8,14 +8,19 @@ import "./Bytes.sol";
  * @author Seiya Kobayashi
  */
 library Challenge {
-    /// @dev Generate a random challenge of the length of 'challengeLength'.
+    /**
+     * @notice Generate a random challenge.
+     * @dev Generate a challenge of random 32 bytes (bytes32) of the given difficulty.
+     * @param _difficulty Difficulty of challenge
+     * @return challenge Generated challenge
+     */
     function generateChallenge(
-        uint8 challengeLength
-    ) internal view returns (bytes memory challenge) {
+        uint256 _difficulty
+    ) internal view returns (bytes32) {
         return
-            Bytes.getTailOfHash(
+            Bytes.getLastNBits(
                 keccak256(abi.encodePacked(block.timestamp, msg.sender)),
-                challengeLength
+                _difficulty
             );
     }
 }

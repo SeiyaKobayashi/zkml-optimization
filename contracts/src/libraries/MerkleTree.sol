@@ -11,20 +11,20 @@ import "./Bytes.sol";
  */
 library MerkleTree {
     /**
-     * @dev Check if tail of every leaf matches the given challenge.
+     * @dev Check if tail of every leaf matches the given challenge and difficulty.
      * @param _challenge Challenge
+     * @param _difficulty Difficulty of challenge
      * @param _leaves Leaves of Merkle tree
+     * @return leavesVerified Returns true if all leaves are verified to contain substring of the challenge.
      */
     function verifyLeaves(
-        bytes memory _challenge,
+        bytes32 _challenge,
+        uint256 _difficulty,
         bytes32[] memory _leaves
     ) internal pure returns (bool) {
         for (uint i = 0; i < _leaves.length; i++) {
-            bytes memory _leafTail = Bytes.getTailOfHash(
-                _leaves[i],
-                _challenge.length
-            );
-            if (!Bytes.equals(_leafTail, _challenge)) {
+            bytes32 _leafTail = Bytes.getLastNBits(_leaves[i], _difficulty);
+            if (_leafTail != _challenge) {
                 return false;
             }
         }
@@ -32,19 +32,26 @@ library MerkleTree {
         return true;
     }
 
-    /// @dev Verify Merkle proofs
+    /**
+     * @dev Verify Merkle proofs.
+     * @param _merkleProofs Merkle proofs
+     * @param _proofFlags Proof flags
+     * @param _merkleRoot Merkle root
+     * @param _leaves Leaves of Merkle tree
+     * @return merkleProofsVerified Returns true if all proofs are verified.
+     */
     function verifyMerkleProofs(
-        bytes32[] calldata merkleProofs,
-        bool[] calldata proofFlags,
-        bytes32 merkleRoot,
-        bytes32[] memory leaves
+        bytes32[] calldata _merkleProofs,
+        bool[] calldata _proofFlags,
+        bytes32 _merkleRoot,
+        bytes32[] memory _leaves
     ) internal pure returns (bool) {
         return
             MerkleProof.multiProofVerifyCalldata(
-                merkleProofs,
-                proofFlags,
-                merkleRoot,
-                leaves
+                _merkleProofs,
+                _proofFlags,
+                _merkleRoot,
+                _leaves
             );
     }
 }

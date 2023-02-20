@@ -27,13 +27,18 @@ const _abi = [
     outputs: [
       {
         internalType: "IVerifier.Hash",
-        name: "commitId",
+        name: "",
         type: "bytes32",
       },
       {
-        internalType: "bytes",
-        name: "challenge",
-        type: "bytes",
+        internalType: "IVerifier.Hash",
+        name: "",
+        type: "bytes32",
+      },
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
       },
     ],
     stateMutability: "nonpayable",
@@ -43,26 +48,13 @@ const _abi = [
     inputs: [
       {
         internalType: "IVerifier.Hash",
-        name: "modelContentId",
+        name: "_modelContentId",
         type: "bytes32",
       },
     ],
     name: "disableModel",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "getChallengeLength",
-    outputs: [
-      {
-        internalType: "uint8",
-        name: "",
-        type: "uint8",
-      },
-    ],
-    stateMutability: "view",
     type: "function",
   },
   {
@@ -93,9 +85,14 @@ const _abi = [
             type: "bytes32",
           },
           {
-            internalType: "bytes",
+            internalType: "IVerifier.Hash",
             name: "challenge",
-            type: "bytes",
+            type: "bytes32",
+          },
+          {
+            internalType: "uint256",
+            name: "difficulty",
+            type: "uint256",
           },
           {
             internalType: "address",
@@ -175,10 +172,23 @@ const _abi = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "getDifficulty",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "IVerifier.Hash",
-        name: "modelContentId",
+        name: "_modelContentId",
         type: "bytes32",
       },
     ],
@@ -213,7 +223,7 @@ const _abi = [
           },
         ],
         internalType: "struct IVerifier.Model",
-        name: "model",
+        name: "",
         type: "tuple",
       },
     ],
@@ -224,12 +234,12 @@ const _abi = [
     inputs: [
       {
         internalType: "uint32",
-        name: "offset",
+        name: "_offset",
         type: "uint32",
       },
       {
         internalType: "uint32",
-        name: "limit",
+        name: "_limit",
         type: "uint32",
       },
     ],
@@ -249,7 +259,7 @@ const _abi = [
           },
         ],
         internalType: "struct IVerifier.ModelArrayElement[]",
-        name: "models",
+        name: "",
         type: "tuple[]",
       },
     ],
@@ -260,17 +270,17 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
-        name: "ownerAddress",
+        name: "_ownerAddress",
         type: "address",
       },
       {
         internalType: "uint32",
-        name: "offset",
+        name: "_offset",
         type: "uint32",
       },
       {
         internalType: "uint32",
-        name: "limit",
+        name: "_limit",
         type: "uint32",
       },
     ],
@@ -290,7 +300,7 @@ const _abi = [
           },
         ],
         internalType: "struct IVerifier.ModelArrayElement[]",
-        name: "models",
+        name: "",
         type: "tuple[]",
       },
     ],
@@ -301,17 +311,17 @@ const _abi = [
     inputs: [
       {
         internalType: "IVerifier.Hash",
-        name: "modelContentId",
+        name: "_modelContentId",
         type: "bytes32",
       },
       {
         internalType: "string",
-        name: "modelName",
+        name: "_modelName",
         type: "string",
       },
       {
         internalType: "string",
-        name: "modelDescription",
+        name: "_modelDescription",
         type: "string",
       },
     ],
@@ -346,7 +356,7 @@ const _abi = [
           },
         ],
         internalType: "struct IVerifier.Model",
-        name: "model",
+        name: "",
         type: "tuple",
       },
     ],
@@ -377,13 +387,7 @@ const _abi = [
       },
     ],
     name: "reveal",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "commitRevealed",
-        type: "bool",
-      },
-    ],
+    outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
@@ -398,9 +402,9 @@ const _abi = [
     name: "updateChallenge",
     outputs: [
       {
-        internalType: "bytes",
-        name: "challenge",
-        type: "bytes",
+        internalType: "IVerifier.Hash",
+        name: "",
+        type: "bytes32",
       },
     ],
     stateMutability: "nonpayable",
@@ -409,12 +413,12 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "uint8",
-        name: "_challengeLength",
-        type: "uint8",
+        internalType: "uint256",
+        name: "_difficulty",
+        type: "uint256",
       },
     ],
-    name: "updateChallengeLength",
+    name: "updateDifficulty",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -423,17 +427,17 @@ const _abi = [
     inputs: [
       {
         internalType: "IVerifier.Hash",
-        name: "modelContentId",
+        name: "_modelContentId",
         type: "bytes32",
       },
       {
         internalType: "string",
-        name: "modelName",
+        name: "_modelName",
         type: "string",
       },
       {
         internalType: "string",
-        name: "modelDescription",
+        name: "_modelDescription",
         type: "string",
       },
     ],

@@ -17,8 +17,8 @@ contract Verifier is IVerifier, Ownable {
         state variables
     */
 
-    // number of digits (in base 16) of challenge
-    uint8 private challengeLength;
+    // difficulty (number of digits in base 16) of challenge
+    uint256 private difficulty;
 
     // array of content IDs of models
     Hash[] private models;
@@ -131,8 +131,8 @@ contract Verifier is IVerifier, Ownable {
         constructor
     */
 
-    constructor(uint8 _challengeLength) {
-        challengeLength = _challengeLength;
+    constructor(uint8 _difficulty) {
+        difficulty = _difficulty;
     }
 
     /*
@@ -140,122 +140,99 @@ contract Verifier is IVerifier, Ownable {
     */
 
     function registerModel(
-        Hash modelContentId,
-        string calldata modelName,
-        string calldata modelDescription
+        Hash _modelContentId,
+        string calldata _modelName,
+        string calldata _modelDescription
     )
         external
-        validateModelParameters(modelName, modelDescription)
-        returns (Model memory model)
+        validateModelParameters(_modelName, _modelDescription)
+        returns (Model memory)
     {
         require(
-            bytes(contentIdToModel[modelContentId].name).length == 0,
+            bytes(contentIdToModel[_modelContentId].name).length == 0,
             "model already exists"
         );
 
-        models.push(modelContentId);
-        ownerAddressToModels[msg.sender].push(modelContentId);
+        models.push(_modelContentId);
+        ownerAddressToModels[msg.sender].push(_modelContentId);
         Model memory _model = Model({
-            contentId: modelContentId,
-            name: modelName,
-            description: modelDescription,
+            contentId: _modelContentId,
+            name: _modelName,
+            description: _modelDescription,
             ownerAddress: msg.sender,
             isDisabled: false
         });
-        contentIdToModel[modelContentId] = _model;
+        contentIdToModel[_modelContentId] = _model;
 
-        emit ModelRegistered(modelContentId, msg.sender);
+        emit ModelRegistered(_modelContentId, msg.sender);
 
         return _model;
     }
 
     function getModel(
-        Hash modelContentId
-    )
-        external
-        view
-        checkIfModelExists(modelContentId)
-        returns (Model memory model)
-    {
-        return contentIdToModel[modelContentId];
+        Hash _modelContentId
+    ) external view checkIfModelExists(_modelContentId) returns (Model memory) {
+        return contentIdToModel[_modelContentId];
     }
 
     function getModels(
-        uint32 offset,
-        uint32 limit
+        uint32 _offset,
+        uint32 _limit
     )
         external
         view
-        validateOffsetParameter(offset, models.length)
-        validateLimitParameter(limit)
-        returns (ModelArrayElement[] memory paginatedModels)
+        validateOffsetParameter(_offset, models.length)
+        validateLimitParameter(_limit)
+        returns (ModelArrayElement[] memory)
     {
-        return _paginateModels(models, offset, limit);
+        return _paginateModels(models, _offset, _limit);
     }
 
     function getModelsByOwnerAddress(
-        address ownerAddress,
-        uint32 offset,
-        uint32 limit
+        address _ownerAddress,
+        uint32 _offset,
+        uint32 _limit
     )
         external
         view
-        checkIfModelOwnerExists(ownerAddress)
+        checkIfModelOwnerExists(_ownerAddress)
         validateOffsetParameter(
-            offset,
-            ownerAddressToModels[ownerAddress].length
+            _offset,
+            ownerAddressToModels[_ownerAddress].length
         )
-        validateLimitParameter(limit)
-        returns (ModelArrayElement[] memory paginatedModels)
+        validateLimitParameter(_limit)
+        returns (ModelArrayElement[] memory)
     {
         return
-            _paginateModels(ownerAddressToModels[ownerAddress], offset, limit);
-    }
-
-    /// @dev Paginate models given array of models, offset and limit.
-    function _paginateModels(
-        Hash[] memory _modelContentIds,
-        uint32 _offset,
-        uint32 _limit
-    ) internal view returns (ModelArrayElement[] memory paginatedModels) {
-        if (_offset + _limit > _modelContentIds.length) {
-            _limit = uint32(_modelContentIds.length - _offset);
-        }
-
-        ModelArrayElement[] memory _paginatedModels = new ModelArrayElement[](
-            _limit
-        );
-        for (uint32 i = 0; i < _limit; i++) {
-            Model memory _model = contentIdToModel[
-                _modelContentIds[_offset + i]
-            ];
-            _paginatedModels[i] = ModelArrayElement({
-                contentId: _model.contentId,
-                name: _model.name
-            });
-        }
-
-        return _paginatedModels;
+            _paginateModels(
+                ownerAddressToModels[_ownerAddress],
+                _offset,
+                _limit
+            );
     }
 
     function updateModel(
-        Hash modelContentId,
-        string calldata modelName,
-        string calldata modelDescription
+        Hash _modelContentId,
+        string calldata _modelName,
+        string calldata _modelDescription
     )
         external
-        checkIfModelExists(modelContentId)
-        isModelOwner(modelContentId)
-        validateModelParameters(modelName, modelDescription)
+        checkIfModelExists(_modelContentId)
+        isModelOwner(_modelContentId)
+        validateModelParameters(_modelName, _modelDescription)
     {
-        contentIdToModel[modelContentId].name = modelName;
-        contentIdToModel[modelContentId].description = modelDescription;
+        contentIdToModel[_modelContentId].name = _modelName;
+        contentIdToModel[_modelContentId].description = _modelDescription;
     }
 
     function disableModel(
-        Hash modelContentId
-    ) external checkIfModelExists(modelContentId) isModelOwner(modelContentId) {
-        contentIdToModel[modelContentId].isDisabled = true;
+        Hash _modelContentId
+    )
+        external
+        checkIfModelExists(_modelContentId)
+        isModelOwner(_modelContentId)
+    {
+        contentIdToModel[_modelContentId].isDisabled = true;
     }
 
     function commit(
@@ -264,10 +241,11 @@ contract Verifier is IVerifier, Ownable {
     )
         external
         checkIfModelExists(_modelContentId)
-        returns (Hash commitId, bytes memory challenge)
+        returns (Hash, Hash, uint256)
     {
         Hash _commitId = _generateCommitId(_modelContentId, _merkleRoot);
-        bytes memory _challenge = Challenge.generateChallenge(challengeLength);
+        Hash _challenge = Hash.wrap(Challenge.generateChallenge(difficulty));
+        uint256 _difficulty = difficulty;
 
         commits[_modelContentId].push(_commitId);
         proverAddressToCommits[msg.sender].push(_commitId);
@@ -276,32 +254,14 @@ contract Verifier is IVerifier, Ownable {
             modelContentId: _modelContentId,
             merkleRoot: _merkleRoot,
             challenge: _challenge,
+            difficulty: _difficulty,
             proverAddress: msg.sender,
             isRevealed: false
         });
 
         emit CommitAdded(_commitId, msg.sender);
 
-        return (_commitId, _challenge);
-    }
-
-    /// @dev Duplicated commit ID is not allowed
-    function _generateCommitId(
-        Hash _modelContentId,
-        Hash _merkleRoot
-    ) internal view returns (Hash commitId) {
-        Hash _commitId = Hash.wrap(
-            keccak256(
-                abi.encodePacked(_modelContentId, _merkleRoot, msg.sender)
-            )
-        );
-
-        require(
-            Hash.unwrap(commitIdToCommit[_commitId].id) == "",
-            "commit already exists"
-        );
-
-        return _commitId;
+        return (_commitId, _challenge, _difficulty);
     }
 
     function getCommit(
@@ -355,48 +315,32 @@ contract Verifier is IVerifier, Ownable {
             );
     }
 
-    /// @dev Paginate commits given array of commit IDs, offset and limit.
-    function _paginateCommits(
-        Hash[] memory _commitIds,
-        uint32 _offset,
-        uint32 _limit
-    ) internal pure returns (Hash[] memory paginatedCommits) {
-        if (_offset + _limit > _commitIds.length) {
-            _limit = uint32(_commitIds.length - _offset);
-        }
-
-        Hash[] memory _paginatedCommits = new Hash[](_limit);
-        for (uint32 i = 0; i < _limit; i++) {
-            _paginatedCommits[i] = _commitIds[_offset + i];
-        }
-
-        return _paginatedCommits;
-    }
-
     function updateChallenge(
         Hash _commitId
     )
         external
         checkIfCommitExists(_commitId)
         isValidProver(commitIdToCommit[_commitId].proverAddress)
-        returns (bytes memory challenge)
+        returns (Hash)
     {
-        bytes memory _challenge = Challenge.generateChallenge(challengeLength);
+        uint256 _difficulty = difficulty;
+        Hash _challenge = Hash.wrap(Challenge.generateChallenge(_difficulty));
         commitIdToCommit[_commitId].challenge = _challenge;
+        commitIdToCommit[_commitId].difficulty = _difficulty;
 
         emit ChallengeUpdated(_commitId, msg.sender);
 
         return _challenge;
     }
 
-    function getChallengeLength() external view onlyOwner returns (uint8) {
-        return challengeLength;
+    function getDifficulty() external view onlyOwner returns (uint256) {
+        return difficulty;
     }
 
-    function updateChallengeLength(uint8 _challengeLength) external onlyOwner {
-        require(_challengeLength <= 32, "length of challenge must be <= 32");
+    function updateDifficulty(uint256 _difficulty) external onlyOwner {
+        require(_difficulty <= 256, "difficulty must be <= 256");
 
-        challengeLength = _challengeLength;
+        difficulty = _difficulty;
     }
 
     function reveal(
@@ -408,30 +352,36 @@ contract Verifier is IVerifier, Ownable {
         external
         checkIfCommitExists(_commitId)
         isValidProver(commitIdToCommit[_commitId].proverAddress)
-        returns (bool commitRevealed)
     {
-        bytes memory _challenge = commitIdToCommit[_commitId].challenge;
-        bool _leavesVerified = MerkleTree.verifyLeaves(_challenge, _leaves);
+        require(
+            commitIdToCommit[_commitId].isRevealed == false,
+            "commit already revealed"
+        );
 
-        require(_leavesVerified == true, "invalid leaves");
+        bytes32 _challenge = Hash.unwrap(commitIdToCommit[_commitId].challenge);
+        uint256 _difficulty = commitIdToCommit[_commitId].difficulty;
+        require(
+            MerkleTree.verifyLeaves(_challenge, _difficulty, _leaves) == true,
+            "invalid leaves"
+        );
 
         bytes32 _merkleRoot = Hash.unwrap(
             commitIdToCommit[_commitId].merkleRoot
         );
-        bool _commitRevealed = MerkleTree.verifyMerkleProofs(
-            _merkleProofs,
-            _proofFlags,
-            _merkleRoot,
-            _leaves
+
+        require(
+            MerkleTree.verifyMerkleProofs(
+                _merkleProofs,
+                _proofFlags,
+                _merkleRoot,
+                _leaves
+            ) == true,
+            "invalid Merkle proofs"
         );
 
-        require(_commitRevealed == true, "invalid Merkle proofs");
-
-        commitIdToCommit[_commitId].isRevealed = _commitRevealed;
+        commitIdToCommit[_commitId].isRevealed = true;
 
         emit CommitRevealed(_commitId, msg.sender);
-
-        return _commitRevealed;
     }
 
     // TODO: enable solhint
@@ -444,4 +394,73 @@ contract Verifier is IVerifier, Ownable {
     ) external returns (ZkpWithValidity[] memory zkpVerifications) {}
 
     /* solhint-enable */
+
+    /// @dev Paginate models given array of models, offset and limit.
+    function _paginateModels(
+        Hash[] memory _modelContentIds,
+        uint32 _offset,
+        uint32 _limit
+    ) internal view returns (ModelArrayElement[] memory) {
+        if (_offset + _limit > _modelContentIds.length) {
+            _limit = uint32(_modelContentIds.length - _offset);
+        }
+
+        ModelArrayElement[] memory _paginatedModels = new ModelArrayElement[](
+            _limit
+        );
+        for (uint32 i = 0; i < _limit; i++) {
+            Model memory _model = contentIdToModel[
+                _modelContentIds[_offset + i]
+            ];
+            _paginatedModels[i] = ModelArrayElement({
+                contentId: _model.contentId,
+                name: _model.name
+            });
+        }
+
+        return _paginatedModels;
+    }
+
+    /// @dev Paginate commits given array of commit IDs, offset and limit.
+    function _paginateCommits(
+        Hash[] memory _commitIds,
+        uint32 _offset,
+        uint32 _limit
+    ) internal pure returns (Hash[] memory) {
+        if (_offset + _limit > _commitIds.length) {
+            _limit = uint32(_commitIds.length - _offset);
+        }
+
+        Hash[] memory _paginatedCommits = new Hash[](_limit);
+        for (uint32 i = 0; i < _limit; i++) {
+            _paginatedCommits[i] = _commitIds[_offset + i];
+        }
+
+        return _paginatedCommits;
+    }
+
+    /**
+     * @notice Generate commit ID.
+     * @dev Duplicated commit ID is not allowed.
+     * @param _modelContentId Hash (content ID / address of IPFS) of model
+     * @param _merkleRoot Root hash of Merkle tree
+     * @return commitId Commit ID
+     */
+    function _generateCommitId(
+        Hash _modelContentId,
+        Hash _merkleRoot
+    ) internal view returns (Hash) {
+        Hash _commitId = Hash.wrap(
+            keccak256(
+                abi.encodePacked(_modelContentId, _merkleRoot, msg.sender)
+            )
+        );
+
+        require(
+            Hash.unwrap(commitIdToCommit[_commitId].id) == "",
+            "commit already exists"
+        );
+
+        return _commitId;
+    }
 }

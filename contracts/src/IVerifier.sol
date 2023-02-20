@@ -29,7 +29,8 @@ interface IVerifier {
         Hash id;
         Hash modelContentId;
         Hash merkleRoot;
-        bytes challenge;
+        Hash challenge;
+        uint256 difficulty;
         address proverAddress;
         bool isRevealed;
     }
@@ -51,98 +52,103 @@ interface IVerifier {
     }
 
     /**
-     * @notice Register a model in the verifier contract.
+     * @notice Register a model.
      * @dev Registered model is enabled by default.
-     * @param modelContentId Hash (content ID / address of IPFS) of model
-     * @param modelName Name of model
-     * @param modelDescription Description of model
+     * @param _modelContentId Hash (content ID / address of IPFS) of model
+     * @param _modelName Name of model
+     * @param _modelDescription Description of model
      * @return model Registered model
      */
     function registerModel(
-        Hash modelContentId,
-        string calldata modelName,
-        string calldata modelDescription
-    ) external returns (Model memory model);
+        Hash _modelContentId,
+        string calldata _modelName,
+        string calldata _modelDescription
+    ) external returns (Model memory);
 
     /**
      * @notice Get info of the requested model.
-     * @param modelContentId Hash (content ID / address of IPFS) of model
+     * @param _modelContentId Hash (content ID / address of IPFS) of model
      * @return model Info of the requested model
      */
     function getModel(
-        Hash modelContentId
-    ) external view returns (Model memory model);
+        Hash _modelContentId
+    ) external view returns (Model memory);
 
     /**
      * @notice Get the list of models registered.
      * @dev Max value of `limit` parameter is 30 for the sake of performance.
-     * @param offset Starting index of array of models to be fetched
-     * @param limit Number of models to fetch
+     * @param _offset Starting index of array of models to be fetched
+     * @param _limit Number of models to be fetched
      * @return models List of models
      */
     function getModels(
-        uint32 offset,
-        uint32 limit
-    ) external view returns (ModelArrayElement[] memory models);
+        uint32 _offset,
+        uint32 _limit
+    ) external view returns (ModelArrayElement[] memory);
 
     /**
      * @notice Get the list of models registered by the specified owner.
      * @dev Max value of `limit` parameter is 30 for the sake of performance.
-     * @param ownerAddress Address of model owner
-     * @param offset Starting index of array of models to be fetched
-     * @param limit Number of models to fetch
+     * @param _ownerAddress Address of model owner
+     * @param _offset Starting index of array of models to be fetched
+     * @param _limit Number of models to be fetched
      * @return models List of models
      */
     function getModelsByOwnerAddress(
-        address ownerAddress,
-        uint32 offset,
-        uint32 limit
-    ) external view returns (ModelArrayElement[] memory models);
+        address _ownerAddress,
+        uint32 _offset,
+        uint32 _limit
+    ) external view returns (ModelArrayElement[] memory);
 
     /**
      * @notice Update info of the requested model.
      * @dev 'contentId' & 'ownerAddress' cannot be updated.
-     * @param modelContentId Hash (content ID / address of IPFS) of model
-     * @param modelName Updated name of model
-     * @param modelDescription Updated description of model
+     * @param _modelContentId Hash (content ID / address of IPFS) of model
+     * @param _modelName Updated name of model
+     * @param _modelDescription Updated description of model
      */
     function updateModel(
-        Hash modelContentId,
-        string calldata modelName,
-        string calldata modelDescription
+        Hash _modelContentId,
+        string calldata _modelName,
+        string calldata _modelDescription
     ) external;
 
     /**
      * @notice Disable the requested model.
      * @dev Model is logically disabled.
-     * @param modelContentId Hash (content ID / address of IPFS) of model
+     * @param _modelContentId Hash (content ID / address of IPFS) of model
      */
-    function disableModel(Hash modelContentId) external;
+    function disableModel(Hash _modelContentId) external;
 
     /**
      * @notice Store commit of testing results, and generate a challenge in return.
-     * @dev 'commitId' is generated from 'modelContentId', 'merkleRoot' and sender's address.
+     * @dev 'commitId' is generated from '_modelContentId', '_merkleRoot' and sender's address.
      * @param _modelContentId Hash (content ID / address of IPFS) of model
      * @param _merkleRoot Root hash of Merkle tree of testing results
      * @return commitId Commit ID
      * @return challenge Challenge
+     * @return difficulty Difficulty of challenge
      */
     function commit(
         Hash _modelContentId,
         Hash _merkleRoot
-    ) external returns (Hash commitId, bytes memory challenge);
+    ) external returns (Hash, Hash, uint256);
 
     /**
      * @notice Get commit details.
+     * @dev This function can only be callable by the contract owner.
      * @param _commitId Commit ID
+     * @return commit Commit details
      */
     function getCommit(Hash _commitId) external view returns (Commit memory);
 
     /**
      * @notice Get commit IDs of the specified model.
+     * @dev This function can only be callable by the contract owner.
      * @param _modelContentId Hash (content ID / address of IPFS) of model
      * @param _offset Starting index of array of commits to be fetched
-     * @param _limit Number of commits to fetch
+     * @param _limit Number of commits to be fetched
+     * @return commits Array of commit IDs
      */
     function getCommitsOfModel(
         Hash _modelContentId,
@@ -155,6 +161,7 @@ interface IVerifier {
      * @param _proverAddress Address of prover
      * @param _offset Starting index of array of commits to be fetched
      * @param _limit Number of commits to fetch
+     * @return commits Array of commit IDs
      */
     function getCommitsOfProver(
         address _proverAddress,
@@ -167,27 +174,26 @@ interface IVerifier {
      * @param _commitId Commit ID
      * @return challenge Updated challenge
      */
-    function updateChallenge(
-        Hash _commitId
-    ) external returns (bytes memory challenge);
+    function updateChallenge(Hash _commitId) external returns (Hash);
 
     /**
-     * @notice Get the length (number of digits) of challenge.
-     * @dev This function can only be callable by contract owner.
+     * @notice Get difficulty of challenge (number of bits of challenge to be verified).
+     * @dev This function can only be callable by the contract owner.
+     * @return difficulty Difficulty of challenge
      */
-    function getChallengeLength() external view returns (uint8);
+    function getDifficulty() external view returns (uint256);
 
     /**
-     * @notice Update the length (number of digits) of challenge.
-     * @dev This function can only be callable by contract owner.
+     * @notice Update difficulty of challenge (number of bits of challenge to be verified).
+     * @dev This function can only be callable by the contract owner.
      *      Already generated (committed) challenges must not be modified.
-     *      Max length is 32, because bytes32 obviously consists of 32 bytes.
-     * @param _challengeLength Length of challenge
+     *      Max value is 256, because bytes32 consists of 256 bits.
+     * @param _difficulty Difficulty of challenge
      */
-    function updateChallengeLength(uint8 _challengeLength) external;
+    function updateDifficulty(uint256 _difficulty) external;
 
     /**
-     * @notice Verify Merkle proofs matched with the challenge.
+     * @notice Verify Merkle proofs of leaves matched with the challenge.
      * @param _commitId commit ID
      * @param _merkleProofs Array of Merkle proofs
      * @param _proofFlags Array of proof flags
@@ -198,7 +204,7 @@ interface IVerifier {
         bytes32[] calldata _merkleProofs,
         bool[] calldata _proofFlags,
         bytes32[] memory _leaves
-    ) external returns (bool commitRevealed);
+    ) external;
 
     /**
      * @notice Receives and verifies ZKPs.
