@@ -2,13 +2,19 @@ import { expect } from 'chai';
 import { Contract, ContractFactory, Signer } from 'ethers';
 import hre from 'hardhat';
 import '@nomicfoundation/hardhat-chai-matchers';
-// import { StandardMerkleTree } from '@openzeppelin/merkle-tree';
+import { StandardMerkleTree } from '@openzeppelin/merkle-tree';
 import { Bytes32 } from 'soltypes';
 
 describe('Verifier Contract', () => {
   const difficulty = 12;
+  const testModelContentId: string = new Bytes32(
+    '0x1111111111111111111111111111111111111111111111111111111111111111',
+  ).toString();
   const testModelName = 'Test Model';
   const testModelDescription = 'Description of test model.';
+  const testMerkleRoot: string = new Bytes32(
+    '0x1111111111111111111111111111111111111111111111111111111111111111',
+  ).toString();
 
   let Verifier: ContractFactory;
   let verifier: Contract;
@@ -52,10 +58,6 @@ describe('Verifier Contract', () => {
 
   describe('registerModel', () => {
     it('success', async () => {
-      const testModelContentId: string = new Bytes32(
-        '0x1111111111111111111111111111111111111111111111111111111111111111',
-      ).toString();
-
       const tx = await verifier.registerModel(
         testModelContentId,
         testModelName,
@@ -85,10 +87,6 @@ describe('Verifier Contract', () => {
     });
 
     it('failure: duplicated model', async () => {
-      const testModelContentId: string = new Bytes32(
-        '0x1111111111111111111111111111111111111111111111111111111111111112',
-      ).toString();
-
       // this call should succeed
       await verifier.registerModel(
         testModelContentId,
@@ -107,20 +105,12 @@ describe('Verifier Contract', () => {
     });
 
     it('failure: empty modelName', async () => {
-      const testModelContentId: string = new Bytes32(
-        '0x1111111111111111111111111111111111111111111111111111111111111113',
-      ).toString();
-
       await expect(
         verifier.registerModel(testModelContentId, '', testModelDescription),
       ).to.be.revertedWith('empty modelName');
     });
 
     it('failure: empty modelDescription', async () => {
-      const testModelContentId: string = new Bytes32(
-        '0x1111111111111111111111111111111111111111111111111111111111111114',
-      ).toString();
-
       await expect(
         verifier.registerModel(testModelContentId, testModelName, ''),
       ).to.be.revertedWith('empty modelDescription');
@@ -129,10 +119,6 @@ describe('Verifier Contract', () => {
 
   describe('getModel', () => {
     it('success', async () => {
-      const testModelContentId: string = new Bytes32(
-        '0x1111111111111111111111111111111111111111111111111111111111111111',
-      ).toString();
-
       await verifier.registerModel(
         testModelContentId,
         testModelName,
@@ -148,10 +134,6 @@ describe('Verifier Contract', () => {
     });
 
     it('failure: model not found', async () => {
-      const testModelContentId: string = new Bytes32(
-        '0x1111111111111111111111111111111111111111111111111111111111111112',
-      ).toString();
-
       await expect(verifier.getModel(testModelContentId)).to.be.revertedWith(
         'model not found',
       );
@@ -204,9 +186,6 @@ describe('Verifier Contract', () => {
       ).to.be.revertedWith('offset must be 0 when no items exist');
 
       // multiple models
-      const testModelContentId: string = new Bytes32(
-        '0x1111111111111111111111111111111111111111111111111111111111111114',
-      ).toString();
       await verifier.registerModel(
         testModelContentId,
         testModelName,
@@ -268,10 +247,6 @@ describe('Verifier Contract', () => {
 
     it('failure: invalid offset', async () => {
       // multiple models
-      const testModelContentId: string = new Bytes32(
-        '0x1111111111111111111111111111111111111111111111111111111111111114',
-      ).toString();
-
       await verifier.registerModel(
         testModelContentId,
         testModelName,
@@ -288,10 +263,6 @@ describe('Verifier Contract', () => {
     });
 
     it('failure: invalid limit', async () => {
-      const testModelContentId: string = new Bytes32(
-        '0x1111111111111111111111111111111111111111111111111111111111111115',
-      ).toString();
-
       await verifier.registerModel(
         testModelContentId,
         testModelName,
@@ -312,14 +283,7 @@ describe('Verifier Contract', () => {
     const updatedTestModelName = 'Updated Test Model';
     const updatedTestModelDescription = 'Updated description of test model.';
 
-    const setUpTestData = async (
-      _testModelContentId: string,
-      _createModel = true,
-    ): Promise<string> => {
-      const testModelContentId: string = new Bytes32(
-        _testModelContentId,
-      ).toString();
-
+    const setup = async (_createModel = true): Promise<string> => {
       if (_createModel) {
         await verifier.registerModel(
           testModelContentId,
@@ -332,9 +296,7 @@ describe('Verifier Contract', () => {
     };
 
     it('success', async () => {
-      const testModelContentId = await setUpTestData(
-        '0x1111111111111111111111111111111111111111111111111111111111111111',
-      );
+      const testModelContentId = await setup();
 
       await verifier.updateModel(
         testModelContentId,
@@ -351,10 +313,7 @@ describe('Verifier Contract', () => {
     });
 
     it('failure: model not found', async () => {
-      const testModelContentId = setUpTestData(
-        '0x1111111111111111111111111111111111111111111111111111111111111112',
-        false,
-      );
+      const testModelContentId = setup(false);
 
       await expect(
         verifier.updateModel(
@@ -366,9 +325,7 @@ describe('Verifier Contract', () => {
     });
 
     it('failure: invalid model owner', async () => {
-      const testModelContentId = setUpTestData(
-        '0x1111111111111111111111111111111111111111111111111111111111111113',
-      );
+      const testModelContentId = setup();
 
       await expect(
         verifier
@@ -382,9 +339,7 @@ describe('Verifier Contract', () => {
     });
 
     it('failure: empty modelName', async () => {
-      const testModelContentId = setUpTestData(
-        '0x1111111111111111111111111111111111111111111111111111111111111114',
-      );
+      const testModelContentId = setup();
 
       await expect(
         verifier.updateModel(
@@ -396,9 +351,7 @@ describe('Verifier Contract', () => {
     });
 
     it('failure: empty modelDescription', async () => {
-      const testModelContentId = setUpTestData(
-        '0x1111111111111111111111111111111111111111111111111111111111111115',
-      );
+      const testModelContentId = setup();
 
       await expect(
         verifier.updateModel(testModelContentId, updatedTestModelName, ''),
@@ -407,14 +360,7 @@ describe('Verifier Contract', () => {
   });
 
   describe('disableModel', () => {
-    const setUpTestData = async (
-      _testModelContentId: string,
-      _createModel = true,
-    ): Promise<string> => {
-      const testModelContentId: string = new Bytes32(
-        _testModelContentId,
-      ).toString();
-
+    const setup = async (_createModel = true): Promise<string> => {
       if (_createModel) {
         await verifier.registerModel(
           testModelContentId,
@@ -427,9 +373,7 @@ describe('Verifier Contract', () => {
     };
 
     it('success', async () => {
-      const testModelContentId = setUpTestData(
-        '0x1111111111111111111111111111111111111111111111111111111111111111',
-      );
+      const testModelContentId = setup();
 
       await verifier.disableModel(testModelContentId);
 
@@ -438,10 +382,7 @@ describe('Verifier Contract', () => {
     });
 
     it('failure: model not found', async () => {
-      const testModelContentId = setUpTestData(
-        '0x1111111111111111111111111111111111111111111111111111111111111112',
-        false,
-      );
+      const testModelContentId = setup(false);
 
       await expect(
         verifier.disableModel(testModelContentId),
@@ -449,9 +390,7 @@ describe('Verifier Contract', () => {
     });
 
     it('failure: invalid model owner', async () => {
-      const testModelContentId = setUpTestData(
-        '0x1111111111111111111111111111111111111111111111111111111111111113',
-      );
+      const testModelContentId = setup();
 
       await expect(
         verifier.connect(anotherAccount).disableModel(testModelContentId),
@@ -460,17 +399,7 @@ describe('Verifier Contract', () => {
   });
 
   describe('commit', () => {
-    const setUpTestData = async (
-      _testModelContentId: string,
-      _createModel = true,
-    ): Promise<[string, string]> => {
-      const testModelContentId: string = new Bytes32(
-        _testModelContentId,
-      ).toString();
-      const testMerkleRoot: string = new Bytes32(
-        '0x1111111111111111111111111111111111111111111111111111111111111111',
-      ).toString();
-
+    const setup = async (_createModel = true): Promise<[string, string]> => {
       if (_createModel) {
         await verifier.registerModel(
           testModelContentId,
@@ -483,9 +412,7 @@ describe('Verifier Contract', () => {
     };
 
     it('success', async () => {
-      const [testModelContentId, testMerkleRoot] = await setUpTestData(
-        '0x1111111111111111111111111111111111111111111111111111111111111111',
-      );
+      const [testModelContentId, testMerkleRoot] = await setup();
 
       const tx = await verifier.commit(testModelContentId, testMerkleRoot);
 
@@ -520,10 +447,7 @@ describe('Verifier Contract', () => {
     });
 
     it('failure: model not found', async () => {
-      const [testModelContentId, testMerkleRoot] = await setUpTestData(
-        '0x1111111111111111111111111111111111111111111111111111111111111112',
-        false,
-      );
+      const [testModelContentId, testMerkleRoot] = await setup(false);
 
       await expect(
         verifier.commit(testModelContentId, testMerkleRoot),
@@ -531,10 +455,7 @@ describe('Verifier Contract', () => {
     });
 
     it('failure: commit already exists', async () => {
-      const [testModelContentId, testMerkleRoot] = await setUpTestData(
-        '0x1111111111111111111111111111111111111111111111111111111111111113',
-        true,
-      );
+      const [testModelContentId, testMerkleRoot] = await setup(true);
 
       await verifier.commit(testModelContentId, testMerkleRoot);
 
@@ -545,18 +466,10 @@ describe('Verifier Contract', () => {
   });
 
   describe('getCommit', () => {
-    const setUpTestData = async (
-      _testModelContentId: string,
+    const setup = async (
       _createModel = true,
       _createCommit = true,
     ): Promise<[string, string]> => {
-      const testModelContentId: string = new Bytes32(
-        _testModelContentId,
-      ).toString();
-      const testMerkleRoot: string = new Bytes32(
-        '0x1111111111111111111111111111111111111111111111111111111111111111',
-      ).toString();
-
       if (_createModel) {
         await verifier.registerModel(
           testModelContentId,
@@ -573,9 +486,7 @@ describe('Verifier Contract', () => {
     };
 
     it('success', async () => {
-      const [testModelContentId, testMerkleRoot] = await setUpTestData(
-        '0x1111111111111111111111111111111111111111111111111111111111111111',
-      );
+      const [testModelContentId, testMerkleRoot] = await setup();
 
       const commitId = generateCommitId(testModelContentId, testMerkleRoot);
 
@@ -591,11 +502,7 @@ describe('Verifier Contract', () => {
     });
 
     it('failure: commit not found', async () => {
-      const [testModelContentId, testMerkleRoot] = await setUpTestData(
-        '0x1111111111111111111111111111111111111111111111111111111111111112',
-        false,
-        false,
-      );
+      const [testModelContentId, testMerkleRoot] = await setup(false, false);
 
       const commitId = generateCommitId(testModelContentId, testMerkleRoot);
 
@@ -605,9 +512,7 @@ describe('Verifier Contract', () => {
     });
 
     it('failure: not contract owner', async () => {
-      const [testModelContentId, testMerkleRoot] = await setUpTestData(
-        '0x1111111111111111111111111111111111111111111111111111111111111113',
-      );
+      const [testModelContentId, testMerkleRoot] = await setup();
 
       const commitId = generateCommitId(testModelContentId, testMerkleRoot);
 
@@ -618,14 +523,10 @@ describe('Verifier Contract', () => {
   });
 
   describe('getCommits', () => {
-    const setUpTestData = async (
-      _testModelContentId: string,
+    const setup = async (
       _createModel = true,
       _createCommits = true,
     ): Promise<string> => {
-      const testModelContentId: string = new Bytes32(
-        _testModelContentId,
-      ).toString();
       const testMerkleRoots: string[] = [
         new Bytes32(
           '0x1111111111111111111111111111111111111111111111111111111111111111',
@@ -658,11 +559,7 @@ describe('Verifier Contract', () => {
     describe('getCommitsOfModel', () => {
       it('success', async () => {
         // no commits
-        const testModelContentId = await setUpTestData(
-          '0x1111111111111111111111111111111111111111111111111111111111111111',
-          true,
-          false,
-        );
+        const testModelContentId = await setup(true, false);
 
         let commits = await verifier.getCommitsOfModel(
           testModelContentId,
@@ -672,11 +569,7 @@ describe('Verifier Contract', () => {
         expect(commits.length).to.equal(0);
 
         // multiple commits
-        await setUpTestData(
-          '0x1111111111111111111111111111111111111111111111111111111111111111',
-          false,
-          true,
-        );
+        await setup(false, true);
 
         commits = await verifier.getCommitsOfModel(testModelContentId, 0, 1);
         expect(commits.length).to.equal(1);
@@ -689,11 +582,7 @@ describe('Verifier Contract', () => {
       });
 
       it('failure: model not found', async () => {
-        const testModelContentId = await setUpTestData(
-          '0x1111111111111111111111111111111111111111111111111111111111111112',
-          false,
-          false,
-        );
+        const testModelContentId = await setup(false, false);
 
         await expect(
           verifier.getCommitsOfModel(testModelContentId, 0, 20),
@@ -702,22 +591,14 @@ describe('Verifier Contract', () => {
 
       it('failure: invalid offset', async () => {
         // no commits
-        const testModelContentId = await setUpTestData(
-          '0x1111111111111111111111111111111111111111111111111111111111111113',
-          true,
-          false,
-        );
+        const testModelContentId = await setup(true, false);
 
         await expect(
           verifier.getCommitsOfModel(testModelContentId, 1, 1),
         ).to.be.revertedWith('offset must be 0 when no items exist');
 
         // multiple commits
-        await setUpTestData(
-          '0x1111111111111111111111111111111111111111111111111111111111111113',
-          false,
-          true,
-        );
+        await setup(false, true);
 
         await expect(
           verifier.getCommitsOfModel(testModelContentId, 5, 1),
@@ -725,9 +606,7 @@ describe('Verifier Contract', () => {
       });
 
       it('failure: invalid limit', async () => {
-        const testModelContentId = await setUpTestData(
-          '0x1111111111111111111111111111111111111111111111111111111111111114',
-        );
+        const testModelContentId = await setup();
 
         const revertMessage = 'limit must be > 0 and <= 30';
         await expect(
@@ -739,9 +618,7 @@ describe('Verifier Contract', () => {
       });
 
       it('failure: not contract owner', async () => {
-        const testModelContentId = await setUpTestData(
-          '0x1111111111111111111111111111111111111111111111111111111111111115',
-        );
+        const testModelContentId = await setup();
 
         await expect(
           verifier
@@ -758,11 +635,7 @@ describe('Verifier Contract', () => {
         expect(commits.length).to.equal(0);
 
         // multiple commits
-        await setUpTestData(
-          '0x1111111111111111111111111111111111111111111111111111111111111116',
-          true,
-          true,
-        );
+        await setup(true, true);
 
         commits = await verifier.getCommitsOfProver(ownerAddress, 0, 1);
         expect(commits.length).to.equal(1);
@@ -781,11 +654,7 @@ describe('Verifier Contract', () => {
         ).to.be.revertedWith('offset must be 0 when no items exist');
 
         // multiple commits
-        await setUpTestData(
-          '0x1111111111111111111111111111111111111111111111111111111111111117',
-          true,
-          true,
-        );
+        await setup(true, true);
 
         await expect(
           verifier.getCommitsOfProver(ownerAddress, 5, 1),
@@ -793,9 +662,7 @@ describe('Verifier Contract', () => {
       });
 
       it('failure: invalid limit', async () => {
-        await setUpTestData(
-          '0x1111111111111111111111111111111111111111111111111111111111111118',
-        );
+        await setup();
 
         const revertMessage = 'limit must be > 0 and <= 30';
         await expect(
@@ -807,9 +674,7 @@ describe('Verifier Contract', () => {
       });
 
       it('failure: invalid prover', async () => {
-        await setUpTestData(
-          '0x1111111111111111111111111111111111111111111111111111111111111119',
-        );
+        await setup();
 
         await expect(
           verifier
@@ -821,18 +686,10 @@ describe('Verifier Contract', () => {
   });
 
   describe('updateChallenge', () => {
-    const setUpTestData = async (
-      _testModelContentId: string,
+    const setup = async (
       _createModel = true,
       _createCommit = true,
     ): Promise<[string, string]> => {
-      const testModelContentId: string = new Bytes32(
-        _testModelContentId,
-      ).toString();
-      const testMerkleRoot: string = new Bytes32(
-        '0x1111111111111111111111111111111111111111111111111111111111111111',
-      ).toString();
-
       if (_createModel) {
         await verifier.registerModel(
           testModelContentId,
@@ -849,9 +706,7 @@ describe('Verifier Contract', () => {
     };
 
     it('success', async () => {
-      const [testModelContentId, testMerkleRoot] = await setUpTestData(
-        '0x1111111111111111111111111111111111111111111111111111111111111111',
-      );
+      const [testModelContentId, testMerkleRoot] = await setup();
 
       const commitId = generateCommitId(testModelContentId, testMerkleRoot);
 
@@ -868,11 +723,7 @@ describe('Verifier Contract', () => {
     });
 
     it('failure: commit not found', async () => {
-      const [testModelContentId, testMerkleRoot] = await setUpTestData(
-        '0x1111111111111111111111111111111111111111111111111111111111111112',
-        false,
-        false,
-      );
+      const [testModelContentId, testMerkleRoot] = await setup(false, false);
 
       const commitId = generateCommitId(testModelContentId, testMerkleRoot);
 
@@ -882,9 +733,7 @@ describe('Verifier Contract', () => {
     });
 
     it('failure: invalid prover', async () => {
-      const [testModelContentId, testMerkleRoot] = await setUpTestData(
-        '0x1111111111111111111111111111111111111111111111111111111111111113',
-      );
+      const [testModelContentId, testMerkleRoot] = await setup();
 
       const commitId = generateCommitId(testModelContentId, testMerkleRoot);
 
@@ -932,134 +781,200 @@ describe('Verifier Contract', () => {
     });
   });
 
-  // describe('reveal', () => {
-  //   const setUpTestData = async (
-  //     _testModelContentId: string,
-  //     _createModel = true,
-  //     _createCommit = true,
-  //   ): Promise<[string, string]> => {
-  //     const testModelContentId: string = new Bytes32(
-  //       _testModelContentId,
-  //     ).toString();
-  //     const testMerkleRoot: string = new Bytes32(
-  //       '0x1111111111111111111111111111111111111111111111111111111111111111',
-  //     ).toString();
+  describe('reveal', () => {
+    const setup = async (
+      _numOfNode = 10,
+      _createModel = true,
+      _createCommit = true,
+    ): Promise<[string, string, StandardMerkleTree<string[]>]> => {
+      // set difficulty to 1 to make sure that challenge almost always matches
+      // at least one of the autogenerated leaves
+      await verifier.updateDifficulty(1);
 
-  //     if (_createModel) {
-  //       await verifier.registerModel(
-  //         testModelContentId,
-  //         testModelName,
-  //         testModelDescription,
-  //       );
-  //     }
+      if (_createModel) {
+        await verifier.registerModel(
+          testModelContentId,
+          testModelName,
+          testModelDescription,
+        );
+      }
 
-  //     if (_createCommit) {
-  //       await verifier.commit(testModelContentId, testMerkleRoot);
-  //     }
+      // generate Merkle tree and store root hash to `testMerkleRoot`
+      const testMerkleTree = generateMerkleTree(_numOfNode);
+      const testMerkleRoot = testMerkleTree.root;
 
-  //     return [testModelContentId, testMerkleRoot];
-  //   };
+      if (_createCommit) {
+        await verifier.commit(testModelContentId, testMerkleRoot);
+      }
 
-  //   const generateMerkleTree = (
-  //     _challenge: string,
-  //     _difficulty: number,
-  //   ): StandardMerkleTree<string[]> => {
-  //     const leaves = [
-  //       generateChallengeHash(_challenge, _difficulty),
-  //       generateHash(['string'], ['b']),
-  //       generateHash(['string'], ['c']),
-  //       generateChallengeHash(_challenge, _difficulty),
-  //     ];
+      return [testModelContentId, testMerkleRoot, testMerkleTree];
+    };
 
-  //     return StandardMerkleTree.of([leaves], ['string']);
-  //   };
+    const generateMerkleTree = (
+      _numOfNodes: number,
+    ): StandardMerkleTree<string[]> => {
+      const leaves: string[][] = [];
+      for (let i = 0; i < _numOfNodes; i++) {
+        leaves.push([`${i}`]);
+      }
 
-  //   const generateChallengeHash = (
-  //     _hash: string,
-  //     _difficulty: number,
-  //   ): string => {
-  //     const _numOfBytes = 64;
-  //     const _lengthOfDifficulty = Math.ceil(_difficulty / 4);
-  //     return `0x${'7'.repeat(_numOfBytes - _lengthOfDifficulty)}${_hash.slice(
-  //       -_lengthOfDifficulty,
-  //     )}`;
-  //   };
+      return StandardMerkleTree.of(leaves, ['string']);
+    };
 
-  //   const generateHash = (_types: string[], _inputs: string[]): string => {
-  //     return hre.ethers.utils.solidityKeccak256(_types, _inputs);
-  //   };
+    const getIndicesOfMerkleTree = (
+      tree: StandardMerkleTree<string[]>,
+      endsWithZero: boolean,
+    ): number[] => {
+      const evenHexDigits: string[] = ['0', '2', '4', '6', '8', 'a', 'c', 'e'];
+      const oddHexDigits: string[] = ['1', '3', '5', '7', '9', 'b', 'd', 'f'];
+      const indices: number[] = [];
 
-  //   it('success', async () => {
-  //     const testModelContentId: string = new Bytes32(
-  //       '0x1111111111111111111111111111111111111111111111111111111111111111',
-  //     ).toString();
+      for (const [i, v] of tree.entries()) {
+        if (
+          endsWithZero &&
+          evenHexDigits.includes(tree.leafHash(v).slice(-1))
+        ) {
+          indices.push(i);
+        } else if (
+          !endsWithZero &&
+          oddHexDigits.includes(tree.leafHash(v).slice(-1))
+        ) {
+          indices.push(i);
+        }
+      }
 
-  //     await verifier.registerModel(
-  //       testModelContentId,
-  //       testModelName,
-  //       testModelDescription,
-  //     );
+      return indices;
+    };
 
-  //     const testMerkleRoot: string = new Bytes32(
-  //       '0x1111111111111111111111111111111111111111111111111111111111111111',
-  //     ).toString();
+    it('success', async () => {
+      const [testModelContentId, testMerkleRoot, testMerkleTree] =
+        await setup();
 
-  //     await verifier.commit(testModelContentId, testMerkleRoot);
+      const commitId = generateCommitId(testModelContentId, testMerkleRoot);
+      let commit = await verifier.getCommit(commitId);
+      const matchedIndices = getIndicesOfMerkleTree(
+        testMerkleTree,
+        commit.challenge.slice(-1) == 0,
+      );
+      const { proof, proofFlags, leaves } =
+        testMerkleTree.getMultiProof(matchedIndices);
+      const leafHashes = leaves.map((e) => testMerkleTree.leafHash(e));
 
-  //     const commitId = generateCommitId(testModelContentId, testMerkleRoot);
-  //     let commit = await verifier.getCommit(commitId);
-  //     const tree = generateMerkleTree(commit.challenge, commit.difficulty);
-  //     testMerkleRoot = tree.root;
-  //     const merkleTree = generateMerkleTree(
-  //       commit.challenge,
-  //       commit.difficulty,
-  //     );
-  //     const { proof, proofFlags, leaves } = merkleTree.getMultiProof([0, 3]);
+      const tx = await verifier.reveal(commitId, proof, proofFlags, leafHashes);
 
-  //     const tx = await verifier.reveal(commitId, proof, proofFlags, leaves);
+      await expect(tx)
+        .to.emit(verifier, 'CommitRevealed')
+        .withArgs(commitId, ownerAddress);
 
-  //     await expect(tx)
-  //       .to.emit(verifier, 'CommitRevealed')
-  //       .withArgs(commitId, ownerAddress);
+      commit = await verifier.getCommit(commitId);
+      expect(commit.isRevealed).to.equal(true);
+    });
 
-  //     commit = await verifier.getCommit(commitId);
-  //     expect(commit.isRevealed).to.equal(true);
-  //   });
+    it('failure: commit not found', async () => {
+      const [testModelContentId, testMerkleRoot, testMerkleTree] = await setup(
+        10,
+        true,
+        false,
+      );
 
-  //   it('failure: commit not found', async () => {
-  //     const [testModelContentId, testMerkleRoot] = await setUpTestData(
-  //       '0x1111111111111111111111111111111111111111111111111111111111111112',
-  //     );
-  //     const commitId = generateCommitId(testModelContentId, testMerkleRoot);
-  //     const commit = await verifier.getCommit(commitId);
-  //     const merkleTree = generateMerkleTree(
-  //       commit.challenge,
-  //       commit.difficulty,
-  //     );
-  //     const { proof, proofFlags, leaves } = merkleTree.getMultiProof([0, 3]);
+      const commitId = generateCommitId(testModelContentId, testMerkleRoot);
+      const matchedIndices = getIndicesOfMerkleTree(testMerkleTree, true);
+      const { proof, proofFlags, leaves } =
+        testMerkleTree.getMultiProof(matchedIndices);
+      const leafHashes = leaves.map((e) => testMerkleTree.leafHash(e));
 
-  //     await expect(
-  //       verifier.reveal(commitId, proof, proofFlags, leaves),
-  //     ).to.be.revertedWith('commit not found');
-  //   });
+      await expect(
+        verifier.reveal(commitId, proof, proofFlags, leafHashes),
+      ).to.be.revertedWith('commit not found');
+    });
 
-  //   it('failure: invalid prover', async () => {
-  //     const [testModelContentId, testMerkleRoot] = await setUpTestData(
-  //       '0x1111111111111111111111111111111111111111111111111111111111111113',
-  //     );
-  //     const commitId = generateCommitId(testModelContentId, testMerkleRoot);
-  //     const commit = await verifier.getCommit(commitId);
-  //     const merkleTree = generateMerkleTree(
-  //       commit.challenge,
-  //       commit.difficulty,
-  //     );
-  //     const { proof, proofFlags, leaves } = merkleTree.getMultiProof([0, 3]);
+    it('failure: invalid prover', async () => {
+      const [testModelContentId, testMerkleRoot, testMerkleTree] =
+        await setup();
 
-  //     await expect(
-  //       verifier
-  //         .connect(anotherAccount)
-  //         .reveal(commitId, proof, proofFlags, leaves),
-  //     ).to.be.revertedWith('invalid prover');
-  //   });
-  // });
+      const commitId = generateCommitId(testModelContentId, testMerkleRoot);
+      const commit = await verifier.getCommit(commitId);
+      const matchedIndices = getIndicesOfMerkleTree(
+        testMerkleTree,
+        commit.challenge.slice(-1) == 0,
+      );
+      const { proof, proofFlags, leaves } =
+        testMerkleTree.getMultiProof(matchedIndices);
+      const leafHashes = leaves.map((e) => testMerkleTree.leafHash(e));
+
+      await expect(
+        verifier
+          .connect(anotherAccount)
+          .reveal(commitId, proof, proofFlags, leafHashes),
+      ).to.be.revertedWith('invalid prover');
+    });
+
+    it('failure: commit already revealed', async () => {
+      const [testModelContentId, testMerkleRoot, testMerkleTree] =
+        await setup();
+
+      const commitId = generateCommitId(testModelContentId, testMerkleRoot);
+      const commit = await verifier.getCommit(commitId);
+      const matchedIndices = getIndicesOfMerkleTree(
+        testMerkleTree,
+        commit.challenge.slice(-1) == 0,
+      );
+      const { proof, proofFlags, leaves } =
+        testMerkleTree.getMultiProof(matchedIndices);
+      const leafHashes = leaves.map((e) => testMerkleTree.leafHash(e));
+
+      await verifier.reveal(commitId, proof, proofFlags, leafHashes);
+      await expect(
+        verifier.reveal(commitId, proof, proofFlags, leafHashes),
+      ).to.be.revertedWith('commit already revealed');
+    });
+
+    it('failure: invalid leaves', async () => {
+      const [testModelContentId, testMerkleRoot, testMerkleTree] =
+        await setup();
+
+      const commitId = generateCommitId(testModelContentId, testMerkleRoot);
+      const commit = await verifier.getCommit(commitId);
+      const matchedIndices = getIndicesOfMerkleTree(
+        testMerkleTree,
+        commit.challenge.slice(-1) != 0,
+      );
+      const { proof, proofFlags, leaves } =
+        testMerkleTree.getMultiProof(matchedIndices);
+      const leafHashes = leaves.map((e) => testMerkleTree.leafHash(e));
+
+      await expect(
+        verifier.reveal(commitId, proof, proofFlags, leafHashes),
+      ).to.be.revertedWith('invalid leaves');
+    });
+
+    it('failure: invalid Merkle proofs', async () => {
+      const [testModelContentId, testMerkleRoot, testMerkleTree] =
+        await setup();
+
+      const commitId = generateCommitId(testModelContentId, testMerkleRoot);
+      const commit = await verifier.getCommit(commitId);
+      const matchedIndices = getIndicesOfMerkleTree(
+        testMerkleTree,
+        commit.challenge.slice(-1) == 0,
+      );
+      const { proof, proofFlags, leaves } =
+        testMerkleTree.getMultiProof(matchedIndices);
+      const leafHashes = leaves.map((e) => testMerkleTree.leafHash(e));
+
+      await expect(
+        verifier.reveal(commitId, proof.reverse(), proofFlags, leafHashes),
+      ).to.be.revertedWith('invalid Merkle proofs');
+
+      // need to re-apply `reverse()` to get the original proof
+      await expect(
+        verifier.reveal(
+          commitId,
+          proof.reverse(),
+          proofFlags.reverse(),
+          leafHashes,
+        ),
+      ).to.be.revertedWith('invalid Merkle proofs');
+    });
+  });
 });
