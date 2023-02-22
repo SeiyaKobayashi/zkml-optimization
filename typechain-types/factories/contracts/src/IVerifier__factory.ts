@@ -36,9 +36,9 @@ const _abi = [
         type: "bytes32",
       },
       {
-        internalType: "uint256",
+        internalType: "uint8",
         name: "",
-        type: "uint256",
+        type: "uint8",
       },
     ],
     stateMutability: "nonpayable",
@@ -90,9 +90,9 @@ const _abi = [
             type: "bytes32",
           },
           {
-            internalType: "uint256",
+            internalType: "uint8",
             name: "difficulty",
-            type: "uint256",
+            type: "uint8",
           },
           {
             internalType: "address",
@@ -176,9 +176,9 @@ const _abi = [
     name: "getDifficulty",
     outputs: [
       {
-        internalType: "uint256",
+        internalType: "uint8",
         name: "",
-        type: "uint256",
+        type: "uint8",
       },
     ],
     stateMutability: "view",
@@ -413,9 +413,9 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "uint256",
+        internalType: "uint8",
         name: "_difficulty",
-        type: "uint256",
+        type: "uint8",
       },
     ],
     name: "updateDifficulty",

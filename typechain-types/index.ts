@@ -10,5 +10,7 @@ export type { Ownable } from "./@openzeppelin/contracts/access/Ownable";
 export { Ownable__factory } from "./factories/@openzeppelin/contracts/access/Ownable__factory";
 export type { IVerifier } from "./contracts/src/IVerifier";
 export { IVerifier__factory } from "./factories/contracts/src/IVerifier__factory";
+export type { TestVerifier } from "./contracts/src/TestVerifier";
+export { TestVerifier__factory } from "./factories/contracts/src/TestVerifier__factory";
 export type { Verifier } from "./contracts/src/Verifier";
 export { Verifier__factory } from "./factories/contracts/src/Verifier__factory";

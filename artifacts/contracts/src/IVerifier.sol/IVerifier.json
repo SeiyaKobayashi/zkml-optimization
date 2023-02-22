@@ -29,9 +29,9 @@
           "type": "bytes32"
         },
         {
-          "internalType": "uint256",
+          "internalType": "uint8",
           "name": "",
-          "type": "uint256"
+          "type": "uint8"
         }
       ],
       "stateMutability": "nonpayable",
@@ -83,9 +83,9 @@
               "type": "bytes32"
             },
             {
-              "internalType": "uint256",
+              "internalType": "uint8",
               "name": "difficulty",
-              "type": "uint256"
+              "type": "uint8"
             },
             {
               "internalType": "address",
@@ -169,9 +169,9 @@
       "name": "getDifficulty",
       "outputs": [
         {
-          "internalType": "uint256",
+          "internalType": "uint8",
           "name": "",
-          "type": "uint256"
+          "type": "uint8"
         }
       ],
       "stateMutability": "view",
@@ -406,9 +406,9 @@
     {
       "inputs": [
         {
-          "internalType": "uint256",
+          "internalType": "uint8",
           "name": "_difficulty",
-          "type": "uint256"
+          "type": "uint8"
         }
       ],
       "name": "updateDifficulty",

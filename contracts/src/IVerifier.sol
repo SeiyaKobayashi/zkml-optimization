@@ -30,7 +30,7 @@ interface IVerifier {
         Hash modelContentId;
         Hash merkleRoot;
         Hash challenge;
-        uint256 difficulty;
+        uint8 difficulty;
         address proverAddress;
         bool isRevealed;
     }
@@ -132,7 +132,7 @@ interface IVerifier {
     function commit(
         Hash _modelContentId,
         Hash _merkleRoot
-    ) external returns (Hash, Hash, uint256);
+    ) external returns (Hash, Hash, uint8);
 
     /**
      * @notice Get commit details.
@@ -181,7 +181,7 @@ interface IVerifier {
      * @dev This function can only be callable by the contract owner.
      * @return difficulty Difficulty of challenge
      */
-    function getDifficulty() external view returns (uint256);
+    function getDifficulty() external view returns (uint8);
 
     /**
      * @notice Update difficulty of challenge (number of bits of challenge to be verified).
@@ -190,7 +190,7 @@ interface IVerifier {
      *      Max value is 256, because bytes32 consists of 256 bits.
      * @param _difficulty Difficulty of challenge
      */
-    function updateDifficulty(uint256 _difficulty) external;
+    function updateDifficulty(uint8 _difficulty) external;
 
     /**
      * @notice Verify Merkle proofs of leaves matched with the challenge.

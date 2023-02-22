@@ -2,4 +2,5 @@
 /* tslint:disable */
 /* eslint-disable */
 export type { IVerifier } from "./IVerifier";
+export type { TestVerifier } from "./TestVerifier";
 export type { Verifier } from "./Verifier";

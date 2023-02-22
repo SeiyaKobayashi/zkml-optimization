@@ -43,7 +43,7 @@ export declare namespace IVerifier {
     string,
     string,
     string,
-    BigNumber,
+    number,
     string,
     boolean
   ] & {
@@ -51,7 +51,7 @@ export declare namespace IVerifier {
     modelContentId: string;
     merkleRoot: string;
     challenge: string;
-    difficulty: BigNumber;
+    difficulty: number;
     proverAddress: string;
     isRevealed: boolean;
   };
@@ -132,7 +132,7 @@ export interface VerifierInterface extends utils.Interface {
     "reveal(bytes32,bytes32[],bool[],bytes32[])": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "updateChallenge(bytes32)": FunctionFragment;
-    "updateDifficulty(uint256)": FunctionFragment;
+    "updateDifficulty(uint8)": FunctionFragment;
     "updateModel(bytes32,string,string)": FunctionFragment;
     "verify(uint256,(uint256[2],uint256[2][2],uint256[2],uint256[16])[])": FunctionFragment;
   };
@@ -463,7 +463,7 @@ export interface Verifier extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string[]]>;
 
-    getDifficulty(overrides?: CallOverrides): Promise<[BigNumber]>;
+    getDifficulty(overrides?: CallOverrides): Promise<[number]>;
 
     getModel(
       _modelContentId: PromiseOrValue<BytesLike>,
@@ -563,7 +563,7 @@ export interface Verifier extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string[]>;
 
-  getDifficulty(overrides?: CallOverrides): Promise<BigNumber>;
+  getDifficulty(overrides?: CallOverrides): Promise<number>;
 
   getModel(
     _modelContentId: PromiseOrValue<BytesLike>,
@@ -637,7 +637,7 @@ export interface Verifier extends BaseContract {
       _modelContentId: PromiseOrValue<BytesLike>,
       _merkleRoot: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
-    ): Promise<[string, string, BigNumber]>;
+    ): Promise<[string, string, number]>;
 
     disableModel(
       _modelContentId: PromiseOrValue<BytesLike>,
@@ -663,7 +663,7 @@ export interface Verifier extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string[]>;
 
-    getDifficulty(overrides?: CallOverrides): Promise<BigNumber>;
+    getDifficulty(overrides?: CallOverrides): Promise<number>;
 
     getModel(
       _modelContentId: PromiseOrValue<BytesLike>,

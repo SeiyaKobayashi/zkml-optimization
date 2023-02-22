@@ -18,7 +18,7 @@ contract Verifier is IVerifier, Ownable {
     */
 
     // difficulty (number of digits in base 16) of challenge
-    uint256 private difficulty;
+    uint8 private difficulty;
 
     // array of content IDs of models
     Hash[] private models;
@@ -63,6 +63,11 @@ contract Verifier is IVerifier, Ownable {
     /*
         modifiers
     */
+
+    modifier isValidDifficulty(uint8 _difficulty) {
+        require(_difficulty != 0, "difficulty cannot be 0");
+        _;
+    }
 
     modifier validateModelParameters(
         string calldata modelName,
@@ -131,7 +136,7 @@ contract Verifier is IVerifier, Ownable {
         constructor
     */
 
-    constructor(uint8 _difficulty) {
+    constructor(uint8 _difficulty) isValidDifficulty(_difficulty) {
         difficulty = _difficulty;
     }
 
@@ -238,14 +243,10 @@ contract Verifier is IVerifier, Ownable {
     function commit(
         Hash _modelContentId,
         Hash _merkleRoot
-    )
-        external
-        checkIfModelExists(_modelContentId)
-        returns (Hash, Hash, uint256)
-    {
+    ) external checkIfModelExists(_modelContentId) returns (Hash, Hash, uint8) {
         Hash _commitId = _generateCommitId(_modelContentId, _merkleRoot);
         Hash _challenge = Hash.wrap(Challenge.generateChallenge(difficulty));
-        uint256 _difficulty = difficulty;
+        uint8 _difficulty = difficulty;
 
         commits[_modelContentId].push(_commitId);
         proverAddressToCommits[msg.sender].push(_commitId);
@@ -323,7 +324,7 @@ contract Verifier is IVerifier, Ownable {
         isValidProver(commitIdToCommit[_commitId].proverAddress)
         returns (Hash)
     {
-        uint256 _difficulty = difficulty;
+        uint8 _difficulty = difficulty;
         Hash _challenge = Hash.wrap(Challenge.generateChallenge(_difficulty));
         commitIdToCommit[_commitId].challenge = _challenge;
         commitIdToCommit[_commitId].difficulty = _difficulty;
@@ -333,13 +334,13 @@ contract Verifier is IVerifier, Ownable {
         return _challenge;
     }
 
-    function getDifficulty() external view onlyOwner returns (uint256) {
+    function getDifficulty() external view onlyOwner returns (uint8) {
         return difficulty;
     }
 
-    function updateDifficulty(uint256 _difficulty) external onlyOwner {
-        require(_difficulty <= 256, "difficulty must be <= 256");
-
+    function updateDifficulty(
+        uint8 _difficulty
+    ) external isValidDifficulty(_difficulty) onlyOwner {
         difficulty = _difficulty;
     }
 
@@ -359,7 +360,7 @@ contract Verifier is IVerifier, Ownable {
         );
 
         bytes32 _challenge = Hash.unwrap(commitIdToCommit[_commitId].challenge);
-        uint256 _difficulty = commitIdToCommit[_commitId].difficulty;
+        uint8 _difficulty = commitIdToCommit[_commitId].difficulty;
         require(
             MerkleTree.verifyLeaves(_challenge, _difficulty, _leaves) == true,
             "invalid leaves"

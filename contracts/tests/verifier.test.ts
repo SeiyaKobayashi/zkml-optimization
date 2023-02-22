@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { Contract, Signer } from 'ethers';
+import { Contract, ContractFactory, Signer } from 'ethers';
 import hre from 'hardhat';
 import '@nomicfoundation/hardhat-chai-matchers';
 // import { StandardMerkleTree } from '@openzeppelin/merkle-tree';
@@ -10,6 +10,7 @@ describe('Verifier Contract', () => {
   const testModelName = 'Test Model';
   const testModelDescription = 'Description of test model.';
 
+  let Verifier: ContractFactory;
   let verifier: Contract;
   let owner: Signer;
   let ownerAddress: string;
@@ -18,7 +19,8 @@ describe('Verifier Contract', () => {
   beforeEach(async () => {
     [owner, anotherAccount] = await hre.ethers.getSigners();
     ownerAddress = await owner.getAddress();
-    const Verifier = await hre.ethers.getContractFactory('Verifier');
+
+    Verifier = await hre.ethers.getContractFactory('Verifier');
     verifier = await Verifier.deploy(difficulty);
     await verifier.deployed();
   });
@@ -32,6 +34,21 @@ describe('Verifier Contract', () => {
       [_testModelContentId, _testMerkleRoot, ownerAddress],
     );
   };
+
+  describe('constructor', () => {
+    it('success', async () => {
+      await Verifier.deploy(difficulty);
+
+      const _difficulty = await verifier.getDifficulty();
+      expect(_difficulty).to.equal(difficulty);
+    });
+
+    it('failure: invalid difficulty', async () => {
+      await expect(Verifier.deploy(0)).to.be.revertedWith(
+        'difficulty cannot be 0',
+      );
+    });
+  });
 
   describe('registerModel', () => {
     it('success', async () => {
@@ -893,7 +910,7 @@ describe('Verifier Contract', () => {
 
   describe('updateDifficulty', () => {
     const validDifficulty = 11;
-    const invalidDifficulty = 257;
+    const invalidDifficulty = 0;
 
     it('success', async () => {
       await verifier.updateDifficulty(validDifficulty);
@@ -902,10 +919,10 @@ describe('Verifier Contract', () => {
       expect(updatedDifficulty).to.equal(validDifficulty);
     });
 
-    it('failure: length too long', async () => {
+    it('failure: invalid difficulty', async () => {
       await expect(
         verifier.updateDifficulty(invalidDifficulty),
-      ).to.be.revertedWith('difficulty must be <= 256');
+      ).to.be.revertedWith('difficulty cannot be 0');
     });
 
     it('failure: not contract owner', async () => {
