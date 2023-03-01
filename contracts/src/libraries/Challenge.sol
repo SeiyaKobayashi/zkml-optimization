@@ -19,7 +19,13 @@ library Challenge {
     ) internal view returns (bytes32) {
         return
             Bytes.getLastNBits(
-                keccak256(abi.encodePacked(block.timestamp, msg.sender)),
+                keccak256(
+                    abi.encodePacked(
+                        blockhash(block.number - 1),
+                        block.timestamp,
+                        msg.sender
+                    )
+                ),
                 _difficulty
             );
     }
