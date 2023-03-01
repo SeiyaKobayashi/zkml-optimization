@@ -18,12 +18,6 @@ interface IVerifier {
         bool isDisabled;
     }
 
-    /// @dev Holds simplified model details
-    struct ModelArrayElement {
-        Hash contentId;
-        string name;
-    }
-
     /// @dev Holds commitment details
     struct Commitment {
         Hash id;
@@ -57,58 +51,28 @@ interface IVerifier {
      * @param _modelContentId Hash (content ID / address of IPFS) of model
      * @param _modelName Name of model
      * @param _modelDescription Description of model
-     * @return model Registered model
+     * @param _modelOwnerAddress Owner address of model
      */
     function registerModel(
         Hash _modelContentId,
         string calldata _modelName,
-        string calldata _modelDescription
-    ) external returns (Model memory);
+        string calldata _modelDescription,
+        address _modelOwnerAddress
+    ) external;
 
     /**
      * @notice Get info of the requested model.
-     * @param _modelContentId Hash (content ID / address of IPFS) of model
      * @return model Info of the requested model
      */
-    function getModel(
-        Hash _modelContentId
-    ) external view returns (Model memory);
-
-    /**
-     * @notice Get the list of models registered.
-     * @dev Max value of `limit` parameter is 30 for the sake of performance.
-     * @param _offset Starting index of array of models to be fetched
-     * @param _limit Number of models to be fetched
-     * @return models List of models
-     */
-    function getModels(
-        uint32 _offset,
-        uint32 _limit
-    ) external view returns (ModelArrayElement[] memory);
-
-    /**
-     * @notice Get the list of models registered by the specified owner.
-     * @dev Max value of `limit` parameter is 30 for the sake of performance.
-     * @param _ownerAddress Address of model owner
-     * @param _offset Starting index of array of models to be fetched
-     * @param _limit Number of models to be fetched
-     * @return models List of models
-     */
-    function getModelsByOwnerAddress(
-        address _ownerAddress,
-        uint32 _offset,
-        uint32 _limit
-    ) external view returns (ModelArrayElement[] memory);
+    function getModel() external view returns (Model memory);
 
     /**
      * @notice Update info of the requested model.
      * @dev 'contentId' & 'ownerAddress' cannot be updated.
-     * @param _modelContentId Hash (content ID / address of IPFS) of model
      * @param _modelName Updated name of model
      * @param _modelDescription Updated description of model
      */
     function updateModel(
-        Hash _modelContentId,
         string calldata _modelName,
         string calldata _modelDescription
     ) external;
@@ -116,23 +80,15 @@ interface IVerifier {
     /**
      * @notice Disable the requested model.
      * @dev Model is logically disabled.
-     * @param _modelContentId Hash (content ID / address of IPFS) of model
      */
-    function disableModel(Hash _modelContentId) external;
+    function disableModel() external;
 
     /**
      * @notice Store commitment of testing results, and generate a challenge in return.
      * @dev 'commitmentId' is generated from '_modelContentId', '_merkleRoot' and sender's address.
-     * @param _modelContentId Hash (content ID / address of IPFS) of model
      * @param _merkleRoot Root hash of Merkle tree of testing results
-     * @return commitmentId Commitment ID
-     * @return challenge Challenge
-     * @return difficulty Difficulty of challenge
      */
-    function commit(
-        Hash _modelContentId,
-        Hash _merkleRoot
-    ) external returns (Hash, Hash, uint8);
+    function commit(Hash _merkleRoot) external;
 
     /**
      * @notice Get commitment details.
@@ -147,26 +103,22 @@ interface IVerifier {
     /**
      * @notice Get commitment IDs of the specified model.
      * @dev This function can only be callable by the contract owner.
-     * @param _modelContentId Hash (content ID / address of IPFS) of model
      * @param _offset Starting index of array of commitments to be fetched
      * @param _limit Number of commitments to be fetched
      * @return commitments Array of commitment IDs
      */
     function getCommitmentsOfModel(
-        Hash _modelContentId,
         uint32 _offset,
         uint32 _limit
     ) external view returns (Hash[] memory);
 
     /**
      * @notice Get commitment IDs of the specified prover.
-     * @param _proverAddress Address of prover
      * @param _offset Starting index of array of commitments to be fetched
      * @param _limit Number of commitments to fetch
      * @return commitments Array of commitment IDs
      */
     function getCommitmentsOfProver(
-        address _proverAddress,
         uint32 _offset,
         uint32 _limit
     ) external view returns (Hash[] memory);
@@ -174,9 +126,8 @@ interface IVerifier {
     /**
      * @notice Update challenge of the specified commitment.
      * @param _commitmentId Commitment ID
-     * @return challenge Updated challenge
      */
-    function updateChallenge(Hash _commitmentId) external returns (Hash);
+    function updateChallenge(Hash _commitmentId) external;
 
     /**
      * @notice Get difficulty of challenge (number of bits of challenge to be verified).

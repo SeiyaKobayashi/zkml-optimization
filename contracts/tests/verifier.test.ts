@@ -18,6 +18,8 @@ describe('Verifier Contract', () => {
 
   let Verifier: ContractFactory;
   let verifier: Contract;
+  let VerifierFactory: ContractFactory;
+  let verifierFactory: Contract;
   let owner: Signer;
   let ownerAddress: string;
   let anotherAccount: Signer;
@@ -29,6 +31,10 @@ describe('Verifier Contract', () => {
     Verifier = await hre.ethers.getContractFactory('Verifier');
     verifier = await Verifier.deploy(difficulty);
     await verifier.deployed();
+
+    VerifierFactory = await hre.ethers.getContractFactory('VerifierFactory');
+    verifierFactory = await VerifierFactory.deploy(verifier.address);
+    await verifierFactory.deployed();
   });
 
   const generateCommitmentId = (
@@ -62,57 +68,40 @@ describe('Verifier Contract', () => {
         testModelContentId,
         testModelName,
         testModelDescription,
+        ownerAddress,
       );
 
       await expect(tx)
         .to.emit(verifier, 'ModelRegistered')
         .withArgs(testModelContentId, ownerAddress);
 
-      const model = await verifier.getModel(testModelContentId);
+      const model = await verifier.getModel();
       expect(model.contentId).to.equal(testModelContentId);
       expect(model.name).to.equal(testModelName);
       expect(model.description).to.equal(testModelDescription);
       expect(model.ownerAddress).to.equal(ownerAddress);
       expect(model.isDisabled).to.equal(false);
-
-      const models = await verifier.getModels(0, 20);
-      expect(models.length).to.equal(1);
-
-      const modelsOfOwner = await verifier.getModelsByOwnerAddress(
-        ownerAddress,
-        0,
-        20,
-      );
-      expect(modelsOfOwner.length).to.equal(1);
-    });
-
-    it('failure: duplicated model', async () => {
-      // this call should succeed
-      await verifier.registerModel(
-        testModelContentId,
-        testModelName,
-        testModelDescription,
-      );
-
-      // this call should fail
-      await expect(
-        verifier.registerModel(
-          testModelContentId,
-          testModelName,
-          testModelDescription,
-        ),
-      ).to.be.revertedWith('model already exists');
     });
 
     it('failure: empty modelName', async () => {
       await expect(
-        verifier.registerModel(testModelContentId, '', testModelDescription),
+        verifier.registerModel(
+          testModelContentId,
+          '',
+          testModelDescription,
+          ownerAddress,
+        ),
       ).to.be.revertedWith('empty modelName');
     });
 
     it('failure: empty modelDescription', async () => {
       await expect(
-        verifier.registerModel(testModelContentId, testModelName, ''),
+        verifier.registerModel(
+          testModelContentId,
+          testModelName,
+          '',
+          ownerAddress,
+        ),
       ).to.be.revertedWith('empty modelDescription');
     });
   });
@@ -123,159 +112,15 @@ describe('Verifier Contract', () => {
         testModelContentId,
         testModelName,
         testModelDescription,
+        ownerAddress,
       );
 
-      const model = await verifier.getModel(testModelContentId);
+      const model = await verifier.getModel();
       expect(model.contentId).to.equal(testModelContentId);
       expect(model.name).to.equal(testModelName);
       expect(model.description).to.equal(testModelDescription);
       expect(model.ownerAddress).to.equal(ownerAddress);
       expect(model.isDisabled).to.equal(false);
-    });
-
-    it('failure: model not found', async () => {
-      await expect(verifier.getModel(testModelContentId)).to.be.revertedWith(
-        'model not found',
-      );
-    });
-  });
-
-  describe('getModels', () => {
-    const testModelContentIds: string[] = [
-      new Bytes32(
-        '0x1111111111111111111111111111111111111111111111111111111111111111',
-      ).toString(),
-      new Bytes32(
-        '0x1111111111111111111111111111111111111111111111111111111111111112',
-      ).toString(),
-      new Bytes32(
-        '0x1111111111111111111111111111111111111111111111111111111111111113',
-      ).toString(),
-    ];
-
-    it('success', async () => {
-      // no models
-      let models = await verifier.getModels(0, 1);
-      expect(models.length).to.equal(0);
-      await expect(
-        verifier.getModels(testModelContentIds.length, 1),
-      ).to.be.revertedWith('offset must be 0 when no items exist');
-
-      // multiple models
-      testModelContentIds.forEach(async (testModelContentId) => {
-        await verifier.registerModel(
-          testModelContentId,
-          testModelName,
-          testModelDescription,
-        );
-      });
-      models = await verifier.getModels(0, 1);
-      expect(models.length).to.equal(1);
-      models = await verifier.getModels(0, 3);
-      expect(models.length).to.equal(3);
-      models = await verifier.getModels(0, 5);
-      expect(models.length).to.equal(3);
-      models = await verifier.getModels(1, 3);
-      expect(models.length).to.equal(2);
-    });
-
-    it('failure: invalid offset', async () => {
-      // no models
-      await expect(
-        verifier.getModels(testModelContentIds.length, 1),
-      ).to.be.revertedWith('offset must be 0 when no items exist');
-
-      // multiple models
-      await verifier.registerModel(
-        testModelContentId,
-        testModelName,
-        testModelDescription,
-      );
-      await expect(
-        verifier.getModels(testModelContentIds.length, 1),
-      ).to.be.revertedWith('offset must be < length of list of items');
-    });
-
-    it('failure: invalid limit', async () => {
-      const revertMessage = 'limit must be > 0 and <= 30';
-      await expect(verifier.getModels(0, 0)).to.be.revertedWith(revertMessage);
-      await expect(verifier.getModels(0, 31)).to.be.revertedWith(revertMessage);
-    });
-  });
-
-  describe('getModelsByOwnerAddress', () => {
-    const testModelContentIds: string[] = [
-      new Bytes32(
-        '0x1111111111111111111111111111111111111111111111111111111111111111',
-      ).toString(),
-      new Bytes32(
-        '0x1111111111111111111111111111111111111111111111111111111111111112',
-      ).toString(),
-      new Bytes32(
-        '0x1111111111111111111111111111111111111111111111111111111111111113',
-      ).toString(),
-    ];
-
-    it('success', async () => {
-      testModelContentIds.forEach(async (testModelContentId) => {
-        await verifier.registerModel(
-          testModelContentId,
-          testModelName,
-          testModelDescription,
-        );
-      });
-
-      let models = await verifier.getModelsByOwnerAddress(ownerAddress, 0, 1);
-      expect(models.length).to.equal(1);
-      models = await verifier.getModels(0, 3);
-      expect(models.length).to.equal(3);
-      models = await verifier.getModels(0, 5);
-      expect(models.length).to.equal(3);
-      models = await verifier.getModels(1, 3);
-      expect(models.length).to.equal(2);
-    });
-
-    it('failure: model owner not found', async () => {
-      await expect(
-        verifier.getModelsByOwnerAddress(
-          '0x0000000000000000000000000000000000000000',
-          0,
-          1,
-        ),
-      ).to.be.revertedWith('model owner not found');
-    });
-
-    it('failure: invalid offset', async () => {
-      // multiple models
-      await verifier.registerModel(
-        testModelContentId,
-        testModelName,
-        testModelDescription,
-      );
-
-      await expect(
-        verifier.getModelsByOwnerAddress(
-          ownerAddress,
-          testModelContentIds.length,
-          1,
-        ),
-      ).to.be.revertedWith('offset must be < length of list of items');
-    });
-
-    it('failure: invalid limit', async () => {
-      await verifier.registerModel(
-        testModelContentId,
-        testModelName,
-        testModelDescription,
-      );
-
-      const revertMessage = 'limit must be > 0 and <= 30';
-      await expect(
-        verifier.getModelsByOwnerAddress(ownerAddress, 0, 0),
-      ).to.be.revertedWith(revertMessage);
-      await expect(
-        verifier.getModelsByOwnerAddress(ownerAddress, 0, 31),
-      ).to.be.revertedWith(revertMessage);
     });
   });
 
@@ -289,6 +134,7 @@ describe('Verifier Contract', () => {
           testModelContentId,
           testModelName,
           testModelDescription,
+          ownerAddress,
         );
       }
 
@@ -299,12 +145,11 @@ describe('Verifier Contract', () => {
       const testModelContentId = await setup();
 
       await verifier.updateModel(
-        testModelContentId,
         updatedTestModelName,
         updatedTestModelDescription,
       );
 
-      const model = await verifier.getModel(testModelContentId);
+      const model = await verifier.getModel();
       expect(model.contentId).to.equal(testModelContentId);
       expect(model.name).to.equal(updatedTestModelName);
       expect(model.description).to.equal(updatedTestModelDescription);
@@ -312,88 +157,59 @@ describe('Verifier Contract', () => {
       expect(model.isDisabled).to.equal(false);
     });
 
-    it('failure: model not found', async () => {
-      const testModelContentId = setup(false);
-
-      await expect(
-        verifier.updateModel(
-          testModelContentId,
-          updatedTestModelName,
-          updatedTestModelDescription,
-        ),
-      ).to.be.revertedWith('model not found');
-    });
-
     it('failure: invalid model owner', async () => {
-      const testModelContentId = setup();
+      await setup();
 
       await expect(
         verifier
           .connect(anotherAccount)
-          .updateModel(
-            testModelContentId,
-            updatedTestModelName,
-            updatedTestModelDescription,
-          ),
+          .updateModel(updatedTestModelName, updatedTestModelDescription),
       ).to.be.revertedWith('only model owner can execute');
     });
 
     it('failure: empty modelName', async () => {
-      const testModelContentId = setup();
+      await setup();
 
       await expect(
-        verifier.updateModel(
-          testModelContentId,
-          '',
-          updatedTestModelDescription,
-        ),
+        verifier.updateModel('', updatedTestModelDescription),
       ).to.be.revertedWith('empty modelName');
     });
 
     it('failure: empty modelDescription', async () => {
-      const testModelContentId = setup();
+      await setup();
 
       await expect(
-        verifier.updateModel(testModelContentId, updatedTestModelName, ''),
+        verifier.updateModel(updatedTestModelName, ''),
       ).to.be.revertedWith('empty modelDescription');
     });
   });
 
   describe('disableModel', () => {
-    const setup = async (_createModel = true): Promise<string> => {
+    const setup = async (_createModel = true): Promise<void> => {
       if (_createModel) {
         await verifier.registerModel(
           testModelContentId,
           testModelName,
           testModelDescription,
+          ownerAddress,
         );
       }
-
-      return testModelContentId;
     };
 
     it('success', async () => {
-      const testModelContentId = setup();
+      await setup();
 
-      await verifier.disableModel(testModelContentId);
+      await verifier.disableModel();
 
-      const model = await verifier.getModel(testModelContentId);
+      const model = await verifier.getModel();
       expect(model.isDisabled).to.equal(true);
     });
 
-    it('failure: model not found', async () => {
-      const testModelContentId = setup(false);
-
-      await expect(
-        verifier.disableModel(testModelContentId),
-      ).to.be.revertedWith('model not found');
-    });
-
     it('failure: invalid model owner', async () => {
-      const testModelContentId = setup();
+      await setup();
 
       await expect(
-        verifier.connect(anotherAccount).disableModel(testModelContentId),
+        verifier.connect(anotherAccount).disableModel(),
       ).to.be.revertedWith('only model owner can execute');
     });
   });
@@ -405,6 +221,7 @@ describe('Verifier Contract', () => {
           testModelContentId,
           testModelName,
           testModelDescription,
+          ownerAddress,
         );
       }
 
@@ -414,29 +231,22 @@ describe('Verifier Contract', () => {
     it('success', async () => {
       const [testModelContentId, testMerkleRoot] = await setup();
 
-      const tx = await verifier.commit(testModelContentId, testMerkleRoot);
+      const tx = await verifier.commit(testMerkleRoot);
 
       const commitId = generateCommitmentId(testModelContentId, testMerkleRoot);
 
+      const commitment = await verifier.getCommitment(commitId);
+
       await expect(tx)
         .to.emit(verifier, 'Committed')
-        .withArgs(commitId, ownerAddress);
+        .withArgs(commitId, ownerAddress, commitment.challenge);
 
-      const commitsOfModel = await verifier.getCommitmentsOfModel(
-        testModelContentId,
-        0,
-        20,
-      );
+      const commitsOfModel = await verifier.getCommitmentsOfModel(0, 20);
       expect(commitsOfModel.length).to.equal(1);
 
-      const commitsOfProver = await verifier.getCommitmentsOfProver(
-        ownerAddress,
-        0,
-        20,
-      );
+      const commitsOfProver = await verifier.getCommitmentsOfProver(0, 20);
       expect(commitsOfProver.length).to.equal(1);
 
-      const commitment = await verifier.getCommitment(commitId);
       expect(commitment.id).to.equal(commitId);
       expect(commitment.modelContentId).to.equal(testModelContentId);
       expect(commitment.merkleRoot).to.equal(testMerkleRoot);
@@ -446,22 +256,14 @@ describe('Verifier Contract', () => {
       expect(commitment.isRevealed).to.equal(false);
     });
 
-    it('failure: model not found', async () => {
-      const [testModelContentId, testMerkleRoot] = await setup(false);
-
-      await expect(
-        verifier.commit(testModelContentId, testMerkleRoot),
-      ).to.be.revertedWith('model not found');
-    });
-
     it('failure: commitment already exists', async () => {
-      const [testModelContentId, testMerkleRoot] = await setup(true);
+      const [, testMerkleRoot] = await setup(true);
 
-      await verifier.commit(testModelContentId, testMerkleRoot);
+      await verifier.commit(testMerkleRoot);
 
-      await expect(
-        verifier.commit(testModelContentId, testMerkleRoot),
-      ).to.be.revertedWith('commitment already exists');
+      await expect(verifier.commit(testMerkleRoot)).to.be.revertedWith(
+        'commitment already exists',
+      );
     });
   });
 
@@ -475,11 +277,12 @@ describe('Verifier Contract', () => {
           testModelContentId,
           testModelName,
           testModelDescription,
+          ownerAddress,
         );
       }
 
       if (_createCommitment) {
-        await verifier.commit(testModelContentId, testMerkleRoot);
+        await verifier.commit(testMerkleRoot);
       }
 
       return [testModelContentId, testMerkleRoot];
@@ -526,7 +329,7 @@ describe('Verifier Contract', () => {
     const setup = async (
       _createModel = true,
       _createCommitments = true,
-    ): Promise<string> => {
+    ): Promise<void> => {
       const testMerkleRoots: string[] = [
         new Bytes32(
           '0x1111111111111111111111111111111111111111111111111111111111111111',
@@ -544,102 +347,71 @@ describe('Verifier Contract', () => {
           testModelContentId,
           testModelName,
           testModelDescription,
+          ownerAddress,
         );
       }
 
       if (_createCommitments) {
         testMerkleRoots.forEach(async (testMerkleRoot) => {
-          await verifier.commit(testModelContentId, testMerkleRoot);
+          await verifier.commit(testMerkleRoot);
         });
       }
-
-      return testModelContentId;
     };
 
     describe('getCommitmentsOfModel', () => {
       it('success', async () => {
         // no commits
-        const testModelContentId = await setup(true, false);
+        await setup(true, false);
 
-        let commits = await verifier.getCommitmentsOfModel(
-          testModelContentId,
-          0,
-          1,
-        );
+        let commits = await verifier.getCommitmentsOfModel(0, 1);
         expect(commits.length).to.equal(0);
 
         // multiple commits
         await setup(false, true);
 
-        commits = await verifier.getCommitmentsOfModel(
-          testModelContentId,
-          0,
-          1,
-        );
+        commits = await verifier.getCommitmentsOfModel(0, 1);
         expect(commits.length).to.equal(1);
-        commits = await verifier.getCommitmentsOfModel(
-          testModelContentId,
-          0,
-          3,
-        );
+        commits = await verifier.getCommitmentsOfModel(0, 3);
         expect(commits.length).to.equal(3);
-        commits = await verifier.getCommitmentsOfModel(
-          testModelContentId,
-          0,
-          5,
-        );
+        commits = await verifier.getCommitmentsOfModel(0, 5);
         expect(commits.length).to.equal(3);
-        commits = await verifier.getCommitmentsOfModel(
-          testModelContentId,
-          1,
-          3,
-        );
+        commits = await verifier.getCommitmentsOfModel(1, 3);
         expect(commits.length).to.equal(2);
-      });
-
-      it('failure: model not found', async () => {
-        const testModelContentId = await setup(false, false);
-
-        await expect(
-          verifier.getCommitmentsOfModel(testModelContentId, 0, 20),
-        ).to.be.revertedWith('model not found');
       });
 
       it('failure: invalid offset', async () => {
         // no commits
-        const testModelContentId = await setup(true, false);
+        await setup(true, false);
 
-        await expect(
-          verifier.getCommitmentsOfModel(testModelContentId, 1, 1),
-        ).to.be.revertedWith('offset must be 0 when no items exist');
+        await expect(verifier.getCommitmentsOfModel(1, 1)).to.be.revertedWith(
+          'offset must be 0 when no items exist',
+        );
 
         // multiple commits
         await setup(false, true);
 
-        await expect(
-          verifier.getCommitmentsOfModel(testModelContentId, 5, 1),
-        ).to.be.revertedWith('offset must be < length of list of items');
+        await expect(verifier.getCommitmentsOfModel(5, 1)).to.be.revertedWith(
+          'offset must be < length of list of items',
+        );
       });
 
       it('failure: invalid limit', async () => {
-        const testModelContentId = await setup();
+        await setup();
 
         const revertMessage = 'limit must be > 0 and <= 30';
-        await expect(
-          verifier.getCommitmentsOfModel(testModelContentId, 0, 0),
-        ).to.be.revertedWith(revertMessage);
-        await expect(
-          verifier.getCommitmentsOfModel(testModelContentId, 0, 31),
-        ).to.be.revertedWith(revertMessage);
+        await expect(verifier.getCommitmentsOfModel(0, 0)).to.be.revertedWith(
+          revertMessage,
+        );
+        await expect(verifier.getCommitmentsOfModel(0, 31)).to.be.revertedWith(
+          revertMessage,
+        );
       });
 
       it('failure: not contract owner', async () => {
-        const testModelContentId = await setup();
+        await setup();
 
         await expect(
-          verifier
-            .connect(anotherAccount)
-            .getCommitmentsOfModel(testModelContentId, 0, 20),
+          verifier.connect(anotherAccount).getCommitmentsOfModel(0, 20),
         ).to.be.revertedWith('Ownable: caller is not the owner');
       });
     });
@@ -647,56 +419,46 @@ describe('Verifier Contract', () => {
     describe('getCommitmentsOfProver', () => {
       it('success', async () => {
         // no commits
-        let commits = await verifier.getCommitmentsOfProver(ownerAddress, 0, 1);
+        let commits = await verifier.getCommitmentsOfProver(0, 1);
         expect(commits.length).to.equal(0);
 
         // multiple commits
         await setup(true, true);
 
-        commits = await verifier.getCommitmentsOfProver(ownerAddress, 0, 1);
+        commits = await verifier.getCommitmentsOfProver(0, 1);
         expect(commits.length).to.equal(1);
-        commits = await verifier.getCommitmentsOfProver(ownerAddress, 0, 3);
+        commits = await verifier.getCommitmentsOfProver(0, 3);
         expect(commits.length).to.equal(3);
-        commits = await verifier.getCommitmentsOfProver(ownerAddress, 0, 5);
+        commits = await verifier.getCommitmentsOfProver(0, 5);
         expect(commits.length).to.equal(3);
-        commits = await verifier.getCommitmentsOfProver(ownerAddress, 1, 3);
+        commits = await verifier.getCommitmentsOfProver(1, 3);
         expect(commits.length).to.equal(2);
       });
 
       it('failure: invalid offset', async () => {
         // no commits
-        await expect(
-          verifier.getCommitmentsOfProver(ownerAddress, 1, 1),
-        ).to.be.revertedWith('offset must be 0 when no items exist');
+        await expect(verifier.getCommitmentsOfProver(1, 1)).to.be.revertedWith(
+          'offset must be 0 when no items exist',
+        );
 
         // multiple commits
         await setup(true, true);
 
-        await expect(
-          verifier.getCommitmentsOfProver(ownerAddress, 5, 1),
-        ).to.be.revertedWith('offset must be < length of list of items');
+        await expect(verifier.getCommitmentsOfProver(5, 1)).to.be.revertedWith(
+          'offset must be < length of list of items',
+        );
       });
 
       it('failure: invalid limit', async () => {
         await setup();
 
         const revertMessage = 'limit must be > 0 and <= 30';
-        await expect(
-          verifier.getCommitmentsOfProver(ownerAddress, 0, 0),
-        ).to.be.revertedWith(revertMessage);
-        await expect(
-          verifier.getCommitmentsOfProver(ownerAddress, 0, 31),
-        ).to.be.revertedWith(revertMessage);
-      });
-
-      it('failure: invalid prover', async () => {
-        await setup();
-
-        await expect(
-          verifier
-            .connect(anotherAccount)
-            .getCommitmentsOfProver(ownerAddress, 0, 20),
-        ).to.be.revertedWith('invalid prover');
+        await expect(verifier.getCommitmentsOfProver(0, 0)).to.be.revertedWith(
+          revertMessage,
+        );
+        await expect(verifier.getCommitmentsOfProver(0, 31)).to.be.revertedWith(
+          revertMessage,
+        );
       });
     });
   });
@@ -711,11 +473,12 @@ describe('Verifier Contract', () => {
           testModelContentId,
           testModelName,
           testModelDescription,
+          ownerAddress,
         );
       }
 
       if (_createCommitment) {
-        await verifier.commit(testModelContentId, testMerkleRoot);
+        await verifier.commit(testMerkleRoot);
       }
 
       return [testModelContentId, testMerkleRoot];
@@ -730,11 +493,12 @@ describe('Verifier Contract', () => {
 
       const tx = await verifier.updateChallenge(commitId);
 
+      const updatedCommitment = await verifier.getCommitment(commitId);
+
       await expect(tx)
         .to.emit(verifier, 'ChallengeUpdated')
-        .withArgs(commitId, ownerAddress);
+        .withArgs(commitId, ownerAddress, updatedCommitment.challenge);
 
-      const updatedCommitment = await verifier.getCommitment(commitId);
       expect(updatedCommitment.challenge).to.not.equal(
         originalCommitment.challenge,
       );
@@ -814,6 +578,7 @@ describe('Verifier Contract', () => {
           testModelContentId,
           testModelName,
           testModelDescription,
+          ownerAddress,
         );
       }
 
@@ -822,7 +587,7 @@ describe('Verifier Contract', () => {
       const testMerkleRoot = testMerkleTree.root;
 
       if (_createCommitment) {
-        await verifier.commit(testModelContentId, testMerkleRoot);
+        await verifier.commit(testMerkleRoot);
       }
 
       return [testModelContentId, testMerkleRoot, testMerkleTree];

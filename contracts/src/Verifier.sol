@@ -20,15 +20,11 @@ contract Verifier is IVerifier, Ownable {
     // difficulty (number of digits in base 16) of challenge
     uint8 private difficulty;
 
-    // array of content IDs of models
-    Hash[] private models;
-    // mapping of owner address to array of content IDs of models
-    mapping(address => Hash[]) private ownerAddressToModels;
-    // mapping of content ID of model to model details
-    mapping(Hash => Model) private contentIdToModel;
+    // model details
+    Model private model;
 
-    // mapping of content ID of model to array of commitment IDs
-    mapping(Hash => Hash[]) private commitments;
+    // array of commitment IDs
+    Hash[] private commitments;
     // mapping of prover address to array of commitment IDs
     mapping(address => Hash[]) private proverAddressToCommitments;
     // mapping of commitment ID of commitment details
@@ -51,11 +47,16 @@ contract Verifier is IVerifier, Ownable {
     event ModelDisabled(Hash indexed contentId, address indexed ownerAddress);
 
     // event to be emitted when a commitment is added
-    event Committed(Hash indexed commitmentId, address indexed proverAddress);
+    event Committed(
+        Hash indexed commitmentId,
+        address indexed proverAddress,
+        Hash _challenge
+    );
     // event to be emitted when challenge of a commitment is updated
     event ChallengeUpdated(
         Hash indexed commitmentId,
-        address indexed proverAddress
+        address indexed proverAddress,
+        Hash _challenge
     );
     // event to be emitted when a commitment is revealed
     event CommitmentRevealed(
@@ -73,65 +74,49 @@ contract Verifier is IVerifier, Ownable {
     }
 
     modifier validateModelParameters(
-        string calldata modelName,
-        string calldata modelDescription
+        string calldata _modelName,
+        string calldata _modelDescription
     ) {
-        require(bytes(modelName).length != 0, "empty modelName");
-        require(bytes(modelDescription).length != 0, "empty modelDescription");
+        require(bytes(_modelName).length != 0, "empty modelName");
+        require(bytes(_modelDescription).length != 0, "empty modelDescription");
         _;
     }
 
-    modifier checkIfModelExists(Hash modelContentId) {
-        require(
-            bytes(contentIdToModel[modelContentId].name).length != 0,
-            "model not found"
-        );
-        _;
-    }
-
-    modifier validateOffsetParameter(uint32 offset, uint length) {
-        if (length > 0) {
+    modifier validateOffsetParameter(uint32 _offset, uint _length) {
+        if (_length > 0) {
             require(
-                offset < length,
+                _offset < _length,
                 "offset must be < length of list of items"
             );
         } else {
-            require(offset == 0, "offset must be 0 when no items exist");
+            require(_offset == 0, "offset must be 0 when no items exist");
         }
         _;
     }
 
-    modifier validateLimitParameter(uint32 limit) {
-        require(limit > 0 && limit <= 30, "limit must be > 0 and <= 30");
+    modifier validateLimitParameter(uint32 _limit) {
+        require(_limit > 0 && _limit <= 30, "limit must be > 0 and <= 30");
         _;
     }
 
-    modifier checkIfModelOwnerExists(address ownerAddress) {
+    modifier isModelOwner(address _senderAddress) {
         require(
-            ownerAddressToModels[ownerAddress].length != 0,
-            "model owner not found"
-        );
-        _;
-    }
-
-    modifier isModelOwner(Hash modelContentId) {
-        require(
-            contentIdToModel[modelContentId].ownerAddress == msg.sender,
+            model.ownerAddress == _senderAddress,
             "only model owner can execute"
         );
         _;
     }
 
-    modifier checkIfCommitmentExists(Hash commitmentId) {
+    modifier checkIfCommitmentExists(Hash _commitmentId) {
         require(
-            Hash.unwrap(commitmentIdToCommitment[commitmentId].id) != "",
+            Hash.unwrap(commitmentIdToCommitment[_commitmentId].id) != "",
             "commitment not found"
         );
         _;
     }
 
-    modifier isValidProver(address proverAddress) {
-        require(proverAddress == msg.sender, "invalid prover");
+    modifier isValidProver(address _proverAddress) {
+        require(_proverAddress == msg.sender, "invalid prover");
         _;
     }
 
@@ -150,115 +135,51 @@ contract Verifier is IVerifier, Ownable {
     function registerModel(
         Hash _modelContentId,
         string calldata _modelName,
-        string calldata _modelDescription
-    )
-        external
-        validateModelParameters(_modelName, _modelDescription)
-        returns (Model memory)
-    {
-        require(
-            bytes(contentIdToModel[_modelContentId].name).length == 0,
-            "model already exists"
-        );
+        string calldata _modelDescription,
+        address _modelOwnerAddress
+    ) external validateModelParameters(_modelName, _modelDescription) {
+        model.contentId = _modelContentId;
+        model.name = _modelName;
+        model.description = _modelDescription;
+        model.ownerAddress = _modelOwnerAddress;
+        model.isDisabled = false;
 
-        models.push(_modelContentId);
-        ownerAddressToModels[msg.sender].push(_modelContentId);
-        Model memory _model = Model({
-            contentId: _modelContentId,
-            name: _modelName,
-            description: _modelDescription,
-            ownerAddress: msg.sender,
-            isDisabled: false
-        });
-        contentIdToModel[_modelContentId] = _model;
-
-        emit ModelRegistered(_modelContentId, msg.sender);
-
-        return _model;
+        emit ModelRegistered(_modelContentId, _modelOwnerAddress);
     }
 
-    function getModel(
-        Hash _modelContentId
-    ) external view checkIfModelExists(_modelContentId) returns (Model memory) {
-        return contentIdToModel[_modelContentId];
-    }
-
-    function getModels(
-        uint32 _offset,
-        uint32 _limit
-    )
-        external
-        view
-        validateOffsetParameter(_offset, models.length)
-        validateLimitParameter(_limit)
-        returns (ModelArrayElement[] memory)
-    {
-        return _paginateModels(models, _offset, _limit);
-    }
-
-    function getModelsByOwnerAddress(
-        address _ownerAddress,
-        uint32 _offset,
-        uint32 _limit
-    )
-        external
-        view
-        checkIfModelOwnerExists(_ownerAddress)
-        validateOffsetParameter(
-            _offset,
-            ownerAddressToModels[_ownerAddress].length
-        )
-        validateLimitParameter(_limit)
-        returns (ModelArrayElement[] memory)
-    {
-        return
-            _paginateModels(
-                ownerAddressToModels[_ownerAddress],
-                _offset,
-                _limit
-            );
+    function getModel() external view returns (Model memory) {
+        return model;
     }
 
     function updateModel(
-        Hash _modelContentId,
         string calldata _modelName,
         string calldata _modelDescription
     )
         external
-        checkIfModelExists(_modelContentId)
-        isModelOwner(_modelContentId)
+        isModelOwner(msg.sender)
         validateModelParameters(_modelName, _modelDescription)
     {
-        contentIdToModel[_modelContentId].name = _modelName;
-        contentIdToModel[_modelContentId].description = _modelDescription;
+        model.name = _modelName;
+        model.description = _modelDescription;
     }
 
-    function disableModel(
-        Hash _modelContentId
-    )
-        external
-        checkIfModelExists(_modelContentId)
-        isModelOwner(_modelContentId)
-    {
-        contentIdToModel[_modelContentId].isDisabled = true;
+    function disableModel() external isModelOwner(msg.sender) {
+        model.isDisabled = true;
     }
 
-    function commit(
-        Hash _modelContentId,
-        Hash _merkleRoot
-    ) external checkIfModelExists(_modelContentId) returns (Hash, Hash, uint8) {
+    function commit(Hash _merkleRoot) external {
         Hash _commitmentId = _generateCommitmentId(
-            _modelContentId,
+            model.contentId,
             _merkleRoot
         );
-        Hash _challenge = Hash.wrap(Challenge.generateChallenge(difficulty));
         uint8 _difficulty = difficulty;
+        Hash _challenge = Hash.wrap(Challenge.generateChallenge(_difficulty));
 
-        commitments[_modelContentId].push(_commitmentId);
+        commitments.push(_commitmentId);
         proverAddressToCommitments[msg.sender].push(_commitmentId);
         commitmentIdToCommitment[_commitmentId] = Commitment({
             id: _commitmentId,
-            modelContentId: _modelContentId,
+            modelContentId: model.contentId,
             merkleRoot: _merkleRoot,
             challenge: _challenge,
             difficulty: _difficulty,
@@ -266,9 +187,7 @@ contract Verifier is IVerifier, Ownable {
             isRevealed: false
         });
 
-        emit Committed(_commitmentId, msg.sender);
-
-        return (_commitmentId, _challenge, _difficulty);
+        emit Committed(_commitmentId, msg.sender, _challenge);
     }
 
     function getCommitment(
@@ -284,24 +203,20 @@ contract Verifier is IVerifier, Ownable {
     }
 
     function getCommitmentsOfModel(
-        Hash _modelContentId,
         uint32 _offset,
         uint32 _limit
     )
         external
         view
-        checkIfModelExists(_modelContentId)
-        validateOffsetParameter(_offset, commitments[_modelContentId].length)
+        validateOffsetParameter(_offset, commitments.length)
         validateLimitParameter(_limit)
         onlyOwner
         returns (Hash[] memory)
     {
-        return
-            _paginateCommitments(commitments[_modelContentId], _offset, _limit);
+        return _paginateCommitments(commitments, _offset, _limit);
     }
 
     function getCommitmentsOfProver(
-        address _proverAddress,
         uint32 _offset,
         uint32 _limit
     )
@@ -309,15 +224,14 @@ contract Verifier is IVerifier, Ownable {
         view
         validateOffsetParameter(
             _offset,
-            proverAddressToCommitments[_proverAddress].length
+            proverAddressToCommitments[msg.sender].length
         )
         validateLimitParameter(_limit)
-        isValidProver(_proverAddress)
         returns (Hash[] memory)
     {
         return
             _paginateCommitments(
-                proverAddressToCommitments[_proverAddress],
+                proverAddressToCommitments[msg.sender],
                 _offset,
                 _limit
             );
@@ -329,16 +243,13 @@ contract Verifier is IVerifier, Ownable {
         external
         checkIfCommitmentExists(_commitmentId)
         isValidProver(commitmentIdToCommitment[_commitmentId].proverAddress)
-        returns (Hash)
     {
         uint8 _difficulty = difficulty;
         Hash _challenge = Hash.wrap(Challenge.generateChallenge(_difficulty));
         commitmentIdToCommitment[_commitmentId].challenge = _challenge;
         commitmentIdToCommitment[_commitmentId].difficulty = _difficulty;
 
-        emit ChallengeUpdated(_commitmentId, msg.sender);
-
-        return _challenge;
+        emit ChallengeUpdated(_commitmentId, msg.sender, _challenge);
     }
 
     function getDifficulty() external view onlyOwner returns (uint8) {
@@ -404,32 +315,6 @@ contract Verifier is IVerifier, Ownable {
     ) external returns (ZkpWithValidity[] memory zkpVerifications) {}
 
     /* solhint-enable */
-
-    /// @dev Paginate models given array of models, offset and limit.
-    function _paginateModels(
-        Hash[] memory _modelContentIds,
-        uint32 _offset,
-        uint32 _limit
-    ) internal view returns (ModelArrayElement[] memory) {
-        if (_offset + _limit > _modelContentIds.length) {
-            _limit = uint32(_modelContentIds.length - _offset);
-        }
-
-        ModelArrayElement[] memory _paginatedModels = new ModelArrayElement[](
-            _limit
-        );
-        for (uint32 i = 0; i < _limit; i++) {
-            Model memory _model = contentIdToModel[
-                _modelContentIds[_offset + i]
-            ];
-            _paginatedModels[i] = ModelArrayElement({
-                contentId: _model.contentId,
-                name: _model.name
-            });
-        }
-
-        return _paginatedModels;
-    }
 
     /// @dev Paginate commitments given array of commitment IDs, offset and limit.
     function _paginateCommitments(

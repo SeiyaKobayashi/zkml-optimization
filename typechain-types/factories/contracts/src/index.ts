@@ -2,4 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export { IVerifier__factory } from "./IVerifier__factory";
+export { IVerifierFactory__factory } from "./IVerifierFactory__factory";
 export { Verifier__factory } from "./Verifier__factory";
+export { VerifierFactory__factory } from "./VerifierFactory__factory";
