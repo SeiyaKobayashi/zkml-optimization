@@ -31,7 +31,7 @@ describe('Verifier Contract', () => {
     await verifier.deployed();
   });
 
-  const generateCommitId = (
+  const generateCommitmentId = (
     _testModelContentId: string,
     _testMerkleRoot: string,
   ): string => {
@@ -416,34 +416,34 @@ describe('Verifier Contract', () => {
 
       const tx = await verifier.commit(testModelContentId, testMerkleRoot);
 
-      const commitId = generateCommitId(testModelContentId, testMerkleRoot);
+      const commitId = generateCommitmentId(testModelContentId, testMerkleRoot);
 
       await expect(tx)
-        .to.emit(verifier, 'CommitAdded')
+        .to.emit(verifier, 'Committed')
         .withArgs(commitId, ownerAddress);
 
-      const commitsOfModel = await verifier.getCommitsOfModel(
+      const commitsOfModel = await verifier.getCommitmentsOfModel(
         testModelContentId,
         0,
         20,
       );
       expect(commitsOfModel.length).to.equal(1);
 
-      const commitsOfProver = await verifier.getCommitsOfProver(
+      const commitsOfProver = await verifier.getCommitmentsOfProver(
         ownerAddress,
         0,
         20,
       );
       expect(commitsOfProver.length).to.equal(1);
 
-      const commit = await verifier.getCommit(commitId);
-      expect(commit.id).to.equal(commitId);
-      expect(commit.modelContentId).to.equal(testModelContentId);
-      expect(commit.merkleRoot).to.equal(testMerkleRoot);
-      expect(commit.challenge.length).to.equal(66);
-      expect(commit.difficulty).to.equal(difficulty);
-      expect(commit.proverAddress).to.equal(ownerAddress);
-      expect(commit.isRevealed).to.equal(false);
+      const commitment = await verifier.getCommitment(commitId);
+      expect(commitment.id).to.equal(commitId);
+      expect(commitment.modelContentId).to.equal(testModelContentId);
+      expect(commitment.merkleRoot).to.equal(testMerkleRoot);
+      expect(commitment.challenge.length).to.equal(66);
+      expect(commitment.difficulty).to.equal(difficulty);
+      expect(commitment.proverAddress).to.equal(ownerAddress);
+      expect(commitment.isRevealed).to.equal(false);
     });
 
     it('failure: model not found', async () => {
@@ -454,21 +454,21 @@ describe('Verifier Contract', () => {
       ).to.be.revertedWith('model not found');
     });
 
-    it('failure: commit already exists', async () => {
+    it('failure: commitment already exists', async () => {
       const [testModelContentId, testMerkleRoot] = await setup(true);
 
       await verifier.commit(testModelContentId, testMerkleRoot);
 
       await expect(
         verifier.commit(testModelContentId, testMerkleRoot),
-      ).to.be.revertedWith('commit already exists');
+      ).to.be.revertedWith('commitment already exists');
     });
   });
 
-  describe('getCommit', () => {
+  describe('getCommitment', () => {
     const setup = async (
       _createModel = true,
-      _createCommit = true,
+      _createCommitment = true,
     ): Promise<[string, string]> => {
       if (_createModel) {
         await verifier.registerModel(
@@ -478,7 +478,7 @@ describe('Verifier Contract', () => {
         );
       }
 
-      if (_createCommit) {
+      if (_createCommitment) {
         await verifier.commit(testModelContentId, testMerkleRoot);
       }
 
@@ -488,44 +488,44 @@ describe('Verifier Contract', () => {
     it('success', async () => {
       const [testModelContentId, testMerkleRoot] = await setup();
 
-      const commitId = generateCommitId(testModelContentId, testMerkleRoot);
+      const commitId = generateCommitmentId(testModelContentId, testMerkleRoot);
 
-      const commit = await verifier.getCommit(commitId);
+      const commitment = await verifier.getCommitment(commitId);
 
-      expect(commit.id).to.equal(commitId);
-      expect(commit.modelContentId).to.equal(testModelContentId);
-      expect(commit.merkleRoot).to.equal(testMerkleRoot);
-      expect(commit.challenge.length).to.equal(66);
-      expect(commit.difficulty).to.equal(difficulty);
-      expect(commit.proverAddress).to.equal(ownerAddress);
-      expect(commit.isRevealed).to.equal(false);
+      expect(commitment.id).to.equal(commitId);
+      expect(commitment.modelContentId).to.equal(testModelContentId);
+      expect(commitment.merkleRoot).to.equal(testMerkleRoot);
+      expect(commitment.challenge.length).to.equal(66);
+      expect(commitment.difficulty).to.equal(difficulty);
+      expect(commitment.proverAddress).to.equal(ownerAddress);
+      expect(commitment.isRevealed).to.equal(false);
     });
 
-    it('failure: commit not found', async () => {
+    it('failure: commitment not found', async () => {
       const [testModelContentId, testMerkleRoot] = await setup(false, false);
 
-      const commitId = generateCommitId(testModelContentId, testMerkleRoot);
+      const commitId = generateCommitmentId(testModelContentId, testMerkleRoot);
 
-      await expect(verifier.getCommit(commitId)).to.be.revertedWith(
-        'commit not found',
+      await expect(verifier.getCommitment(commitId)).to.be.revertedWith(
+        'commitment not found',
       );
     });
 
     it('failure: not contract owner', async () => {
       const [testModelContentId, testMerkleRoot] = await setup();
 
-      const commitId = generateCommitId(testModelContentId, testMerkleRoot);
+      const commitId = generateCommitmentId(testModelContentId, testMerkleRoot);
 
       await expect(
-        verifier.connect(anotherAccount).getCommit(commitId),
+        verifier.connect(anotherAccount).getCommitment(commitId),
       ).to.be.revertedWith('Ownable: caller is not the owner');
     });
   });
 
-  describe('getCommits', () => {
+  describe('getCommitments', () => {
     const setup = async (
       _createModel = true,
-      _createCommits = true,
+      _createCommitments = true,
     ): Promise<string> => {
       const testMerkleRoots: string[] = [
         new Bytes32(
@@ -547,7 +547,7 @@ describe('Verifier Contract', () => {
         );
       }
 
-      if (_createCommits) {
+      if (_createCommitments) {
         testMerkleRoots.forEach(async (testMerkleRoot) => {
           await verifier.commit(testModelContentId, testMerkleRoot);
         });
@@ -556,12 +556,12 @@ describe('Verifier Contract', () => {
       return testModelContentId;
     };
 
-    describe('getCommitsOfModel', () => {
+    describe('getCommitmentsOfModel', () => {
       it('success', async () => {
         // no commits
         const testModelContentId = await setup(true, false);
 
-        let commits = await verifier.getCommitsOfModel(
+        let commits = await verifier.getCommitmentsOfModel(
           testModelContentId,
           0,
           1,
@@ -571,13 +571,29 @@ describe('Verifier Contract', () => {
         // multiple commits
         await setup(false, true);
 
-        commits = await verifier.getCommitsOfModel(testModelContentId, 0, 1);
+        commits = await verifier.getCommitmentsOfModel(
+          testModelContentId,
+          0,
+          1,
+        );
         expect(commits.length).to.equal(1);
-        commits = await verifier.getCommitsOfModel(testModelContentId, 0, 3);
+        commits = await verifier.getCommitmentsOfModel(
+          testModelContentId,
+          0,
+          3,
+        );
         expect(commits.length).to.equal(3);
-        commits = await verifier.getCommitsOfModel(testModelContentId, 0, 5);
+        commits = await verifier.getCommitmentsOfModel(
+          testModelContentId,
+          0,
+          5,
+        );
         expect(commits.length).to.equal(3);
-        commits = await verifier.getCommitsOfModel(testModelContentId, 1, 3);
+        commits = await verifier.getCommitmentsOfModel(
+          testModelContentId,
+          1,
+          3,
+        );
         expect(commits.length).to.equal(2);
       });
 
@@ -585,7 +601,7 @@ describe('Verifier Contract', () => {
         const testModelContentId = await setup(false, false);
 
         await expect(
-          verifier.getCommitsOfModel(testModelContentId, 0, 20),
+          verifier.getCommitmentsOfModel(testModelContentId, 0, 20),
         ).to.be.revertedWith('model not found');
       });
 
@@ -594,14 +610,14 @@ describe('Verifier Contract', () => {
         const testModelContentId = await setup(true, false);
 
         await expect(
-          verifier.getCommitsOfModel(testModelContentId, 1, 1),
+          verifier.getCommitmentsOfModel(testModelContentId, 1, 1),
         ).to.be.revertedWith('offset must be 0 when no items exist');
 
         // multiple commits
         await setup(false, true);
 
         await expect(
-          verifier.getCommitsOfModel(testModelContentId, 5, 1),
+          verifier.getCommitmentsOfModel(testModelContentId, 5, 1),
         ).to.be.revertedWith('offset must be < length of list of items');
       });
 
@@ -610,10 +626,10 @@ describe('Verifier Contract', () => {
 
         const revertMessage = 'limit must be > 0 and <= 30';
         await expect(
-          verifier.getCommitsOfModel(testModelContentId, 0, 0),
+          verifier.getCommitmentsOfModel(testModelContentId, 0, 0),
         ).to.be.revertedWith(revertMessage);
         await expect(
-          verifier.getCommitsOfModel(testModelContentId, 0, 31),
+          verifier.getCommitmentsOfModel(testModelContentId, 0, 31),
         ).to.be.revertedWith(revertMessage);
       });
 
@@ -623,41 +639,41 @@ describe('Verifier Contract', () => {
         await expect(
           verifier
             .connect(anotherAccount)
-            .getCommitsOfModel(testModelContentId, 0, 20),
+            .getCommitmentsOfModel(testModelContentId, 0, 20),
         ).to.be.revertedWith('Ownable: caller is not the owner');
       });
     });
 
-    describe('getCommitsOfProver', () => {
+    describe('getCommitmentsOfProver', () => {
       it('success', async () => {
         // no commits
-        let commits = await verifier.getCommitsOfProver(ownerAddress, 0, 1);
+        let commits = await verifier.getCommitmentsOfProver(ownerAddress, 0, 1);
         expect(commits.length).to.equal(0);
 
         // multiple commits
         await setup(true, true);
 
-        commits = await verifier.getCommitsOfProver(ownerAddress, 0, 1);
+        commits = await verifier.getCommitmentsOfProver(ownerAddress, 0, 1);
         expect(commits.length).to.equal(1);
-        commits = await verifier.getCommitsOfProver(ownerAddress, 0, 3);
+        commits = await verifier.getCommitmentsOfProver(ownerAddress, 0, 3);
         expect(commits.length).to.equal(3);
-        commits = await verifier.getCommitsOfProver(ownerAddress, 0, 5);
+        commits = await verifier.getCommitmentsOfProver(ownerAddress, 0, 5);
         expect(commits.length).to.equal(3);
-        commits = await verifier.getCommitsOfProver(ownerAddress, 1, 3);
+        commits = await verifier.getCommitmentsOfProver(ownerAddress, 1, 3);
         expect(commits.length).to.equal(2);
       });
 
       it('failure: invalid offset', async () => {
         // no commits
         await expect(
-          verifier.getCommitsOfProver(ownerAddress, 1, 1),
+          verifier.getCommitmentsOfProver(ownerAddress, 1, 1),
         ).to.be.revertedWith('offset must be 0 when no items exist');
 
         // multiple commits
         await setup(true, true);
 
         await expect(
-          verifier.getCommitsOfProver(ownerAddress, 5, 1),
+          verifier.getCommitmentsOfProver(ownerAddress, 5, 1),
         ).to.be.revertedWith('offset must be < length of list of items');
       });
 
@@ -666,10 +682,10 @@ describe('Verifier Contract', () => {
 
         const revertMessage = 'limit must be > 0 and <= 30';
         await expect(
-          verifier.getCommitsOfProver(ownerAddress, 0, 0),
+          verifier.getCommitmentsOfProver(ownerAddress, 0, 0),
         ).to.be.revertedWith(revertMessage);
         await expect(
-          verifier.getCommitsOfProver(ownerAddress, 0, 31),
+          verifier.getCommitmentsOfProver(ownerAddress, 0, 31),
         ).to.be.revertedWith(revertMessage);
       });
 
@@ -679,7 +695,7 @@ describe('Verifier Contract', () => {
         await expect(
           verifier
             .connect(anotherAccount)
-            .getCommitsOfProver(ownerAddress, 0, 20),
+            .getCommitmentsOfProver(ownerAddress, 0, 20),
         ).to.be.revertedWith('invalid prover');
       });
     });
@@ -688,7 +704,7 @@ describe('Verifier Contract', () => {
   describe('updateChallenge', () => {
     const setup = async (
       _createModel = true,
-      _createCommit = true,
+      _createCommitment = true,
     ): Promise<[string, string]> => {
       if (_createModel) {
         await verifier.registerModel(
@@ -698,7 +714,7 @@ describe('Verifier Contract', () => {
         );
       }
 
-      if (_createCommit) {
+      if (_createCommitment) {
         await verifier.commit(testModelContentId, testMerkleRoot);
       }
 
@@ -708,9 +724,9 @@ describe('Verifier Contract', () => {
     it('success', async () => {
       const [testModelContentId, testMerkleRoot] = await setup();
 
-      const commitId = generateCommitId(testModelContentId, testMerkleRoot);
+      const commitId = generateCommitmentId(testModelContentId, testMerkleRoot);
 
-      const originalCommit = await verifier.getCommit(commitId);
+      const originalCommitment = await verifier.getCommitment(commitId);
 
       const tx = await verifier.updateChallenge(commitId);
 
@@ -718,24 +734,26 @@ describe('Verifier Contract', () => {
         .to.emit(verifier, 'ChallengeUpdated')
         .withArgs(commitId, ownerAddress);
 
-      const updatedCommit = await verifier.getCommit(commitId);
-      expect(updatedCommit.challenge).to.not.equal(originalCommit.challenge);
+      const updatedCommitment = await verifier.getCommitment(commitId);
+      expect(updatedCommitment.challenge).to.not.equal(
+        originalCommitment.challenge,
+      );
     });
 
-    it('failure: commit not found', async () => {
+    it('failure: commitment not found', async () => {
       const [testModelContentId, testMerkleRoot] = await setup(false, false);
 
-      const commitId = generateCommitId(testModelContentId, testMerkleRoot);
+      const commitId = generateCommitmentId(testModelContentId, testMerkleRoot);
 
       await expect(verifier.updateChallenge(commitId)).to.be.revertedWith(
-        'commit not found',
+        'commitment not found',
       );
     });
 
     it('failure: invalid prover', async () => {
       const [testModelContentId, testMerkleRoot] = await setup();
 
-      const commitId = generateCommitId(testModelContentId, testMerkleRoot);
+      const commitId = generateCommitmentId(testModelContentId, testMerkleRoot);
 
       await expect(
         verifier.connect(anotherAccount).updateChallenge(commitId),
@@ -785,7 +803,7 @@ describe('Verifier Contract', () => {
     const setup = async (
       _numOfNode = 10,
       _createModel = true,
-      _createCommit = true,
+      _createCommitment = true,
     ): Promise<[string, string, StandardMerkleTree<string[]>]> => {
       // set difficulty to 1 to make sure that challenge almost always matches
       // at least one of the autogenerated leaves
@@ -803,7 +821,7 @@ describe('Verifier Contract', () => {
       const testMerkleTree = generateMerkleTree(_numOfNode);
       const testMerkleRoot = testMerkleTree.root;
 
-      if (_createCommit) {
+      if (_createCommitment) {
         await verifier.commit(testModelContentId, testMerkleRoot);
       }
 
@@ -850,11 +868,11 @@ describe('Verifier Contract', () => {
       const [testModelContentId, testMerkleRoot, testMerkleTree] =
         await setup();
 
-      const commitId = generateCommitId(testModelContentId, testMerkleRoot);
-      let commit = await verifier.getCommit(commitId);
+      const commitId = generateCommitmentId(testModelContentId, testMerkleRoot);
+      let commitment = await verifier.getCommitment(commitId);
       const matchedIndices = getIndicesOfMerkleTree(
         testMerkleTree,
-        commit.challenge.slice(-1) == 0,
+        commitment.challenge.slice(-1) == 0,
       );
       const { proof, proofFlags, leaves } =
         testMerkleTree.getMultiProof(matchedIndices);
@@ -863,21 +881,21 @@ describe('Verifier Contract', () => {
       const tx = await verifier.reveal(commitId, proof, proofFlags, leafHashes);
 
       await expect(tx)
-        .to.emit(verifier, 'CommitRevealed')
+        .to.emit(verifier, 'CommitmentRevealed')
         .withArgs(commitId, ownerAddress);
 
-      commit = await verifier.getCommit(commitId);
-      expect(commit.isRevealed).to.equal(true);
+      commitment = await verifier.getCommitment(commitId);
+      expect(commitment.isRevealed).to.equal(true);
     });
 
-    it('failure: commit not found', async () => {
+    it('failure: commitment not found', async () => {
       const [testModelContentId, testMerkleRoot, testMerkleTree] = await setup(
         10,
         true,
         false,
       );
 
-      const commitId = generateCommitId(testModelContentId, testMerkleRoot);
+      const commitId = generateCommitmentId(testModelContentId, testMerkleRoot);
       const matchedIndices = getIndicesOfMerkleTree(testMerkleTree, true);
       const { proof, proofFlags, leaves } =
         testMerkleTree.getMultiProof(matchedIndices);
@@ -885,18 +903,18 @@ describe('Verifier Contract', () => {
 
       await expect(
         verifier.reveal(commitId, proof, proofFlags, leafHashes),
-      ).to.be.revertedWith('commit not found');
+      ).to.be.revertedWith('commitment not found');
     });
 
     it('failure: invalid prover', async () => {
       const [testModelContentId, testMerkleRoot, testMerkleTree] =
         await setup();
 
-      const commitId = generateCommitId(testModelContentId, testMerkleRoot);
-      const commit = await verifier.getCommit(commitId);
+      const commitId = generateCommitmentId(testModelContentId, testMerkleRoot);
+      const commitment = await verifier.getCommitment(commitId);
       const matchedIndices = getIndicesOfMerkleTree(
         testMerkleTree,
-        commit.challenge.slice(-1) == 0,
+        commitment.challenge.slice(-1) == 0,
       );
       const { proof, proofFlags, leaves } =
         testMerkleTree.getMultiProof(matchedIndices);
@@ -909,15 +927,15 @@ describe('Verifier Contract', () => {
       ).to.be.revertedWith('invalid prover');
     });
 
-    it('failure: commit already revealed', async () => {
+    it('failure: commitment already revealed', async () => {
       const [testModelContentId, testMerkleRoot, testMerkleTree] =
         await setup();
 
-      const commitId = generateCommitId(testModelContentId, testMerkleRoot);
-      const commit = await verifier.getCommit(commitId);
+      const commitId = generateCommitmentId(testModelContentId, testMerkleRoot);
+      const commitment = await verifier.getCommitment(commitId);
       const matchedIndices = getIndicesOfMerkleTree(
         testMerkleTree,
-        commit.challenge.slice(-1) == 0,
+        commitment.challenge.slice(-1) == 0,
       );
       const { proof, proofFlags, leaves } =
         testMerkleTree.getMultiProof(matchedIndices);
@@ -926,18 +944,18 @@ describe('Verifier Contract', () => {
       await verifier.reveal(commitId, proof, proofFlags, leafHashes);
       await expect(
         verifier.reveal(commitId, proof, proofFlags, leafHashes),
-      ).to.be.revertedWith('commit already revealed');
+      ).to.be.revertedWith('commitment already revealed');
     });
 
     it('failure: invalid leaves', async () => {
       const [testModelContentId, testMerkleRoot, testMerkleTree] =
         await setup();
 
-      const commitId = generateCommitId(testModelContentId, testMerkleRoot);
-      const commit = await verifier.getCommit(commitId);
+      const commitId = generateCommitmentId(testModelContentId, testMerkleRoot);
+      const commitment = await verifier.getCommitment(commitId);
       const matchedIndices = getIndicesOfMerkleTree(
         testMerkleTree,
-        commit.challenge.slice(-1) != 0,
+        commitment.challenge.slice(-1) != 0,
       );
       const { proof, proofFlags, leaves } =
         testMerkleTree.getMultiProof(matchedIndices);
@@ -952,11 +970,11 @@ describe('Verifier Contract', () => {
       const [testModelContentId, testMerkleRoot, testMerkleTree] =
         await setup();
 
-      const commitId = generateCommitId(testModelContentId, testMerkleRoot);
-      const commit = await verifier.getCommit(commitId);
+      const commitId = generateCommitmentId(testModelContentId, testMerkleRoot);
+      const commitment = await verifier.getCommitment(commitId);
       const matchedIndices = getIndicesOfMerkleTree(
         testMerkleTree,
-        commit.challenge.slice(-1) == 0,
+        commitment.challenge.slice(-1) == 0,
       );
       const { proof, proofFlags, leaves } =
         testMerkleTree.getMultiProof(matchedIndices);

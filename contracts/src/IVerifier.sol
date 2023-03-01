@@ -24,8 +24,8 @@ interface IVerifier {
         string name;
     }
 
-    /// @dev Holds commit details
-    struct Commit {
+    /// @dev Holds commitment details
+    struct Commitment {
         Hash id;
         Hash modelContentId;
         Hash merkleRoot;
@@ -121,11 +121,11 @@ interface IVerifier {
     function disableModel(Hash _modelContentId) external;
 
     /**
-     * @notice Store commit of testing results, and generate a challenge in return.
-     * @dev 'commitId' is generated from '_modelContentId', '_merkleRoot' and sender's address.
+     * @notice Store commitment of testing results, and generate a challenge in return.
+     * @dev 'commitmentId' is generated from '_modelContentId', '_merkleRoot' and sender's address.
      * @param _modelContentId Hash (content ID / address of IPFS) of model
      * @param _merkleRoot Root hash of Merkle tree of testing results
-     * @return commitId Commit ID
+     * @return commitmentId Commitment ID
      * @return challenge Challenge
      * @return difficulty Difficulty of challenge
      */
@@ -135,46 +135,48 @@ interface IVerifier {
     ) external returns (Hash, Hash, uint8);
 
     /**
-     * @notice Get commit details.
+     * @notice Get commitment details.
      * @dev This function can only be callable by the contract owner.
-     * @param _commitId Commit ID
-     * @return commit Commit details
+     * @param _commitmentId commitment ID
+     * @return commitment commitment details
      */
-    function getCommit(Hash _commitId) external view returns (Commit memory);
+    function getCommitment(
+        Hash _commitmentId
+    ) external view returns (Commitment memory);
 
     /**
-     * @notice Get commit IDs of the specified model.
+     * @notice Get commitment IDs of the specified model.
      * @dev This function can only be callable by the contract owner.
      * @param _modelContentId Hash (content ID / address of IPFS) of model
-     * @param _offset Starting index of array of commits to be fetched
-     * @param _limit Number of commits to be fetched
-     * @return commits Array of commit IDs
+     * @param _offset Starting index of array of commitments to be fetched
+     * @param _limit Number of commitments to be fetched
+     * @return commitments Array of commitment IDs
      */
-    function getCommitsOfModel(
+    function getCommitmentsOfModel(
         Hash _modelContentId,
         uint32 _offset,
         uint32 _limit
     ) external view returns (Hash[] memory);
 
     /**
-     * @notice Get commit IDs of the specified prover.
+     * @notice Get commitment IDs of the specified prover.
      * @param _proverAddress Address of prover
-     * @param _offset Starting index of array of commits to be fetched
-     * @param _limit Number of commits to fetch
-     * @return commits Array of commit IDs
+     * @param _offset Starting index of array of commitments to be fetched
+     * @param _limit Number of commitments to fetch
+     * @return commitments Array of commitment IDs
      */
-    function getCommitsOfProver(
+    function getCommitmentsOfProver(
         address _proverAddress,
         uint32 _offset,
         uint32 _limit
     ) external view returns (Hash[] memory);
 
     /**
-     * @notice Update challenge of the specified commit.
-     * @param _commitId Commit ID
+     * @notice Update challenge of the specified commitment.
+     * @param _commitmentId Commitment ID
      * @return challenge Updated challenge
      */
-    function updateChallenge(Hash _commitId) external returns (Hash);
+    function updateChallenge(Hash _commitmentId) external returns (Hash);
 
     /**
      * @notice Get difficulty of challenge (number of bits of challenge to be verified).
@@ -194,13 +196,13 @@ interface IVerifier {
 
     /**
      * @notice Verify Merkle proofs of leaves matched with the challenge.
-     * @param _commitId commit ID
+     * @param _commitmentId commitment ID
      * @param _merkleProofs Array of Merkle proofs
      * @param _proofFlags Array of proof flags
      * @param _leaves Array of Merkle leaves
      */
     function reveal(
-        Hash _commitId,
+        Hash _commitmentId,
         bytes32[] calldata _merkleProofs,
         bool[] calldata _proofFlags,
         bytes32[] memory _leaves

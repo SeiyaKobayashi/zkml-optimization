@@ -61,11 +61,11 @@ const _abi = [
     inputs: [
       {
         internalType: "IVerifier.Hash",
-        name: "_commitId",
+        name: "_commitmentId",
         type: "bytes32",
       },
     ],
-    name: "getCommit",
+    name: "getCommitment",
     outputs: [
       {
         components: [
@@ -105,7 +105,7 @@ const _abi = [
             type: "bool",
           },
         ],
-        internalType: "struct IVerifier.Commit",
+        internalType: "struct IVerifier.Commitment",
         name: "",
         type: "tuple",
       },
@@ -131,7 +131,7 @@ const _abi = [
         type: "uint32",
       },
     ],
-    name: "getCommitsOfModel",
+    name: "getCommitmentsOfModel",
     outputs: [
       {
         internalType: "IVerifier.Hash[]",
@@ -160,7 +160,7 @@ const _abi = [
         type: "uint32",
       },
     ],
-    name: "getCommitsOfProver",
+    name: "getCommitmentsOfProver",
     outputs: [
       {
         internalType: "IVerifier.Hash[]",
@@ -367,7 +367,7 @@ const _abi = [
     inputs: [
       {
         internalType: "IVerifier.Hash",
-        name: "_commitId",
+        name: "_commitmentId",
         type: "bytes32",
       },
       {
@@ -395,7 +395,7 @@ const _abi = [
     inputs: [
       {
         internalType: "IVerifier.Hash",
-        name: "_commitId",
+        name: "_commitmentId",
         type: "bytes32",
       },
     ],

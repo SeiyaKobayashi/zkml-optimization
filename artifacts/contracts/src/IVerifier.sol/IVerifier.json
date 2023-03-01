@@ -54,11 +54,11 @@
       "inputs": [
         {
           "internalType": "IVerifier.Hash",
-          "name": "_commitId",
+          "name": "_commitmentId",
           "type": "bytes32"
         }
       ],
-      "name": "getCommit",
+      "name": "getCommitment",
       "outputs": [
         {
           "components": [
@@ -98,7 +98,7 @@
               "type": "bool"
             }
           ],
-          "internalType": "struct IVerifier.Commit",
+          "internalType": "struct IVerifier.Commitment",
           "name": "",
           "type": "tuple"
         }
@@ -124,7 +124,7 @@
           "type": "uint32"
         }
       ],
-      "name": "getCommitsOfModel",
+      "name": "getCommitmentsOfModel",
       "outputs": [
         {
           "internalType": "IVerifier.Hash[]",
@@ -153,7 +153,7 @@
           "type": "uint32"
         }
       ],
-      "name": "getCommitsOfProver",
+      "name": "getCommitmentsOfProver",
       "outputs": [
         {
           "internalType": "IVerifier.Hash[]",
@@ -360,7 +360,7 @@
       "inputs": [
         {
           "internalType": "IVerifier.Hash",
-          "name": "_commitId",
+          "name": "_commitmentId",
           "type": "bytes32"
         },
         {
@@ -388,7 +388,7 @@
       "inputs": [
         {
           "internalType": "IVerifier.Hash",
-          "name": "_commitId",
+          "name": "_commitmentId",
           "type": "bytes32"
         }
       ],

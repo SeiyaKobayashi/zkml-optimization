@@ -28,7 +28,7 @@ import type {
 } from "../../common";
 
 export declare namespace IVerifier {
-  export type CommitStruct = {
+  export type CommitmentStruct = {
     id: PromiseOrValue<BytesLike>;
     modelContentId: PromiseOrValue<BytesLike>;
     merkleRoot: PromiseOrValue<BytesLike>;
@@ -38,7 +38,7 @@ export declare namespace IVerifier {
     isRevealed: PromiseOrValue<boolean>;
   };
 
-  export type CommitStructOutput = [
+  export type CommitmentStructOutput = [
     string,
     string,
     string,
@@ -119,9 +119,9 @@ export interface VerifierInterface extends utils.Interface {
   functions: {
     "commit(bytes32,bytes32)": FunctionFragment;
     "disableModel(bytes32)": FunctionFragment;
-    "getCommit(bytes32)": FunctionFragment;
-    "getCommitsOfModel(bytes32,uint32,uint32)": FunctionFragment;
-    "getCommitsOfProver(address,uint32,uint32)": FunctionFragment;
+    "getCommitment(bytes32)": FunctionFragment;
+    "getCommitmentsOfModel(bytes32,uint32,uint32)": FunctionFragment;
+    "getCommitmentsOfProver(address,uint32,uint32)": FunctionFragment;
     "getDifficulty()": FunctionFragment;
     "getModel(bytes32)": FunctionFragment;
     "getModels(uint32,uint32)": FunctionFragment;
@@ -141,9 +141,9 @@ export interface VerifierInterface extends utils.Interface {
     nameOrSignatureOrTopic:
       | "commit"
       | "disableModel"
-      | "getCommit"
-      | "getCommitsOfModel"
-      | "getCommitsOfProver"
+      | "getCommitment"
+      | "getCommitmentsOfModel"
+      | "getCommitmentsOfProver"
       | "getDifficulty"
       | "getModel"
       | "getModels"
@@ -168,11 +168,11 @@ export interface VerifierInterface extends utils.Interface {
     values: [PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(
-    functionFragment: "getCommit",
+    functionFragment: "getCommitment",
     values: [PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(
-    functionFragment: "getCommitsOfModel",
+    functionFragment: "getCommitmentsOfModel",
     values: [
       PromiseOrValue<BytesLike>,
       PromiseOrValue<BigNumberish>,
@@ -180,7 +180,7 @@ export interface VerifierInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "getCommitsOfProver",
+    functionFragment: "getCommitmentsOfProver",
     values: [
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>,
@@ -259,13 +259,16 @@ export interface VerifierInterface extends utils.Interface {
     functionFragment: "disableModel",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "getCommit", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "getCommitsOfModel",
+    functionFragment: "getCommitment",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getCommitsOfProver",
+    functionFragment: "getCommitmentsOfModel",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getCommitmentsOfProver",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -308,8 +311,8 @@ export interface VerifierInterface extends utils.Interface {
 
   events: {
     "ChallengeUpdated(bytes32,address)": EventFragment;
-    "CommitAdded(bytes32,address)": EventFragment;
-    "CommitRevealed(bytes32,address)": EventFragment;
+    "CommitmentRevealed(bytes32,address)": EventFragment;
+    "Committed(bytes32,address)": EventFragment;
     "ModelDisabled(bytes32,address)": EventFragment;
     "ModelRegistered(bytes32,address)": EventFragment;
     "ModelUpdated(bytes32,address,string,string)": EventFragment;
@@ -317,8 +320,8 @@ export interface VerifierInterface extends utils.Interface {
   };
 
   getEvent(nameOrSignatureOrTopic: "ChallengeUpdated"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "CommitAdded"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "CommitRevealed"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "CommitmentRevealed"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Committed"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ModelDisabled"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ModelRegistered"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ModelUpdated"): EventFragment;
@@ -326,7 +329,7 @@ export interface VerifierInterface extends utils.Interface {
 }
 
 export interface ChallengeUpdatedEventObject {
-  commitId: string;
+  commitmentId: string;
   proverAddress: string;
 }
 export type ChallengeUpdatedEvent = TypedEvent<
@@ -337,27 +340,25 @@ export type ChallengeUpdatedEvent = TypedEvent<
 export type ChallengeUpdatedEventFilter =
   TypedEventFilter<ChallengeUpdatedEvent>;
 
-export interface CommitAddedEventObject {
-  commitId: string;
+export interface CommitmentRevealedEventObject {
+  commitmentId: string;
   proverAddress: string;
 }
-export type CommitAddedEvent = TypedEvent<
+export type CommitmentRevealedEvent = TypedEvent<
   [string, string],
-  CommitAddedEventObject
+  CommitmentRevealedEventObject
 >;
 
-export type CommitAddedEventFilter = TypedEventFilter<CommitAddedEvent>;
+export type CommitmentRevealedEventFilter =
+  TypedEventFilter<CommitmentRevealedEvent>;
 
-export interface CommitRevealedEventObject {
-  commitId: string;
+export interface CommittedEventObject {
+  commitmentId: string;
   proverAddress: string;
 }
-export type CommitRevealedEvent = TypedEvent<
-  [string, string],
-  CommitRevealedEventObject
->;
+export type CommittedEvent = TypedEvent<[string, string], CommittedEventObject>;
 
-export type CommitRevealedEventFilter = TypedEventFilter<CommitRevealedEvent>;
+export type CommittedEventFilter = TypedEventFilter<CommittedEvent>;
 
 export interface ModelDisabledEventObject {
   contentId: string;
@@ -444,19 +445,19 @@ export interface Verifier extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    getCommit(
-      _commitId: PromiseOrValue<BytesLike>,
+    getCommitment(
+      _commitmentId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
-    ): Promise<[IVerifier.CommitStructOutput]>;
+    ): Promise<[IVerifier.CommitmentStructOutput]>;
 
-    getCommitsOfModel(
+    getCommitmentsOfModel(
       _modelContentId: PromiseOrValue<BytesLike>,
       _offset: PromiseOrValue<BigNumberish>,
       _limit: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[string[]]>;
 
-    getCommitsOfProver(
+    getCommitmentsOfProver(
       _proverAddress: PromiseOrValue<string>,
       _offset: PromiseOrValue<BigNumberish>,
       _limit: PromiseOrValue<BigNumberish>,
@@ -497,7 +498,7 @@ export interface Verifier extends BaseContract {
     ): Promise<ContractTransaction>;
 
     reveal(
-      _commitId: PromiseOrValue<BytesLike>,
+      _commitmentId: PromiseOrValue<BytesLike>,
       _merkleProofs: PromiseOrValue<BytesLike>[],
       _proofFlags: PromiseOrValue<boolean>[],
       _leaves: PromiseOrValue<BytesLike>[],
@@ -510,7 +511,7 @@ export interface Verifier extends BaseContract {
     ): Promise<ContractTransaction>;
 
     updateChallenge(
-      _commitId: PromiseOrValue<BytesLike>,
+      _commitmentId: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -544,19 +545,19 @@ export interface Verifier extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  getCommit(
-    _commitId: PromiseOrValue<BytesLike>,
+  getCommitment(
+    _commitmentId: PromiseOrValue<BytesLike>,
     overrides?: CallOverrides
-  ): Promise<IVerifier.CommitStructOutput>;
+  ): Promise<IVerifier.CommitmentStructOutput>;
 
-  getCommitsOfModel(
+  getCommitmentsOfModel(
     _modelContentId: PromiseOrValue<BytesLike>,
     _offset: PromiseOrValue<BigNumberish>,
     _limit: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<string[]>;
 
-  getCommitsOfProver(
+  getCommitmentsOfProver(
     _proverAddress: PromiseOrValue<string>,
     _offset: PromiseOrValue<BigNumberish>,
     _limit: PromiseOrValue<BigNumberish>,
@@ -597,7 +598,7 @@ export interface Verifier extends BaseContract {
   ): Promise<ContractTransaction>;
 
   reveal(
-    _commitId: PromiseOrValue<BytesLike>,
+    _commitmentId: PromiseOrValue<BytesLike>,
     _merkleProofs: PromiseOrValue<BytesLike>[],
     _proofFlags: PromiseOrValue<boolean>[],
     _leaves: PromiseOrValue<BytesLike>[],
@@ -610,7 +611,7 @@ export interface Verifier extends BaseContract {
   ): Promise<ContractTransaction>;
 
   updateChallenge(
-    _commitId: PromiseOrValue<BytesLike>,
+    _commitmentId: PromiseOrValue<BytesLike>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -644,19 +645,19 @@ export interface Verifier extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    getCommit(
-      _commitId: PromiseOrValue<BytesLike>,
+    getCommitment(
+      _commitmentId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
-    ): Promise<IVerifier.CommitStructOutput>;
+    ): Promise<IVerifier.CommitmentStructOutput>;
 
-    getCommitsOfModel(
+    getCommitmentsOfModel(
       _modelContentId: PromiseOrValue<BytesLike>,
       _offset: PromiseOrValue<BigNumberish>,
       _limit: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<string[]>;
 
-    getCommitsOfProver(
+    getCommitmentsOfProver(
       _proverAddress: PromiseOrValue<string>,
       _offset: PromiseOrValue<BigNumberish>,
       _limit: PromiseOrValue<BigNumberish>,
@@ -695,7 +696,7 @@ export interface Verifier extends BaseContract {
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
     reveal(
-      _commitId: PromiseOrValue<BytesLike>,
+      _commitmentId: PromiseOrValue<BytesLike>,
       _merkleProofs: PromiseOrValue<BytesLike>[],
       _proofFlags: PromiseOrValue<boolean>[],
       _leaves: PromiseOrValue<BytesLike>[],
@@ -708,7 +709,7 @@ export interface Verifier extends BaseContract {
     ): Promise<void>;
 
     updateChallenge(
-      _commitId: PromiseOrValue<BytesLike>,
+      _commitmentId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<string>;
 
@@ -733,31 +734,31 @@ export interface Verifier extends BaseContract {
 
   filters: {
     "ChallengeUpdated(bytes32,address)"(
-      commitId?: PromiseOrValue<BytesLike> | null,
+      commitmentId?: PromiseOrValue<BytesLike> | null,
       proverAddress?: PromiseOrValue<string> | null
     ): ChallengeUpdatedEventFilter;
     ChallengeUpdated(
-      commitId?: PromiseOrValue<BytesLike> | null,
+      commitmentId?: PromiseOrValue<BytesLike> | null,
       proverAddress?: PromiseOrValue<string> | null
     ): ChallengeUpdatedEventFilter;
 
-    "CommitAdded(bytes32,address)"(
-      commitId?: PromiseOrValue<BytesLike> | null,
+    "CommitmentRevealed(bytes32,address)"(
+      commitmentId?: PromiseOrValue<BytesLike> | null,
       proverAddress?: PromiseOrValue<string> | null
-    ): CommitAddedEventFilter;
-    CommitAdded(
-      commitId?: PromiseOrValue<BytesLike> | null,
+    ): CommitmentRevealedEventFilter;
+    CommitmentRevealed(
+      commitmentId?: PromiseOrValue<BytesLike> | null,
       proverAddress?: PromiseOrValue<string> | null
-    ): CommitAddedEventFilter;
+    ): CommitmentRevealedEventFilter;
 
-    "CommitRevealed(bytes32,address)"(
-      commitId?: PromiseOrValue<BytesLike> | null,
+    "Committed(bytes32,address)"(
+      commitmentId?: PromiseOrValue<BytesLike> | null,
       proverAddress?: PromiseOrValue<string> | null
-    ): CommitRevealedEventFilter;
-    CommitRevealed(
-      commitId?: PromiseOrValue<BytesLike> | null,
+    ): CommittedEventFilter;
+    Committed(
+      commitmentId?: PromiseOrValue<BytesLike> | null,
       proverAddress?: PromiseOrValue<string> | null
-    ): CommitRevealedEventFilter;
+    ): CommittedEventFilter;
 
     "ModelDisabled(bytes32,address)"(
       contentId?: PromiseOrValue<BytesLike> | null,
@@ -812,19 +813,19 @@ export interface Verifier extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    getCommit(
-      _commitId: PromiseOrValue<BytesLike>,
+    getCommitment(
+      _commitmentId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getCommitsOfModel(
+    getCommitmentsOfModel(
       _modelContentId: PromiseOrValue<BytesLike>,
       _offset: PromiseOrValue<BigNumberish>,
       _limit: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getCommitsOfProver(
+    getCommitmentsOfProver(
       _proverAddress: PromiseOrValue<string>,
       _offset: PromiseOrValue<BigNumberish>,
       _limit: PromiseOrValue<BigNumberish>,
@@ -865,7 +866,7 @@ export interface Verifier extends BaseContract {
     ): Promise<BigNumber>;
 
     reveal(
-      _commitId: PromiseOrValue<BytesLike>,
+      _commitmentId: PromiseOrValue<BytesLike>,
       _merkleProofs: PromiseOrValue<BytesLike>[],
       _proofFlags: PromiseOrValue<boolean>[],
       _leaves: PromiseOrValue<BytesLike>[],
@@ -878,7 +879,7 @@ export interface Verifier extends BaseContract {
     ): Promise<BigNumber>;
 
     updateChallenge(
-      _commitId: PromiseOrValue<BytesLike>,
+      _commitmentId: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -913,19 +914,19 @@ export interface Verifier extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    getCommit(
-      _commitId: PromiseOrValue<BytesLike>,
+    getCommitment(
+      _commitmentId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getCommitsOfModel(
+    getCommitmentsOfModel(
       _modelContentId: PromiseOrValue<BytesLike>,
       _offset: PromiseOrValue<BigNumberish>,
       _limit: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getCommitsOfProver(
+    getCommitmentsOfProver(
       _proverAddress: PromiseOrValue<string>,
       _offset: PromiseOrValue<BigNumberish>,
       _limit: PromiseOrValue<BigNumberish>,
@@ -966,7 +967,7 @@ export interface Verifier extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     reveal(
-      _commitId: PromiseOrValue<BytesLike>,
+      _commitmentId: PromiseOrValue<BytesLike>,
       _merkleProofs: PromiseOrValue<BytesLike>[],
       _proofFlags: PromiseOrValue<boolean>[],
       _leaves: PromiseOrValue<BytesLike>[],
@@ -979,7 +980,7 @@ export interface Verifier extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     updateChallenge(
-      _commitId: PromiseOrValue<BytesLike>,
+      _commitmentId: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

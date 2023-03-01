@@ -27,12 +27,12 @@ contract Verifier is IVerifier, Ownable {
     // mapping of content ID of model to model details
     mapping(Hash => Model) private contentIdToModel;
 
-    // mapping of content ID of model to array of commit IDs
-    mapping(Hash => Hash[]) private commits;
-    // mapping of prover address to array of commit IDs
-    mapping(address => Hash[]) private proverAddressToCommits;
-    // mapping of commit ID of commit details
-    mapping(Hash => Commit) private commitIdToCommit;
+    // mapping of content ID of model to array of commitment IDs
+    mapping(Hash => Hash[]) private commitments;
+    // mapping of prover address to array of commitment IDs
+    mapping(address => Hash[]) private proverAddressToCommitments;
+    // mapping of commitment ID of commitment details
+    mapping(Hash => Commitment) private commitmentIdToCommitment;
 
     /*
         events
@@ -50,15 +50,18 @@ contract Verifier is IVerifier, Ownable {
     // event to be emitted when a model is disabled
     event ModelDisabled(Hash indexed contentId, address indexed ownerAddress);
 
-    // event to be emitted when a commit is added
-    event CommitAdded(Hash indexed commitId, address indexed proverAddress);
-    // event to be emitted when challenge of a commit is updated
+    // event to be emitted when a commitment is added
+    event Committed(Hash indexed commitmentId, address indexed proverAddress);
+    // event to be emitted when challenge of a commitment is updated
     event ChallengeUpdated(
-        Hash indexed commitId,
+        Hash indexed commitmentId,
         address indexed proverAddress
     );
-    // event to be emitted when a commit is revealed
-    event CommitRevealed(Hash indexed commitId, address indexed proverAddress);
+    // event to be emitted when a commitment is revealed
+    event CommitmentRevealed(
+        Hash indexed commitmentId,
+        address indexed proverAddress
+    );
 
     /*
         modifiers
@@ -119,10 +122,10 @@ contract Verifier is IVerifier, Ownable {
         _;
     }
 
-    modifier checkIfCommitExists(Hash commitId) {
+    modifier checkIfCommitmentExists(Hash commitmentId) {
         require(
-            Hash.unwrap(commitIdToCommit[commitId].id) != "",
-            "commit not found"
+            Hash.unwrap(commitmentIdToCommitment[commitmentId].id) != "",
+            "commitment not found"
         );
         _;
     }
@@ -244,14 +247,17 @@ contract Verifier is IVerifier, Ownable {
         Hash _modelContentId,
         Hash _merkleRoot
     ) external checkIfModelExists(_modelContentId) returns (Hash, Hash, uint8) {
-        Hash _commitId = _generateCommitId(_modelContentId, _merkleRoot);
+        Hash _commitmentId = _generateCommitmentId(
+            _modelContentId,
+            _merkleRoot
+        );
         Hash _challenge = Hash.wrap(Challenge.generateChallenge(difficulty));
         uint8 _difficulty = difficulty;
 
-        commits[_modelContentId].push(_commitId);
-        proverAddressToCommits[msg.sender].push(_commitId);
-        commitIdToCommit[_commitId] = Commit({
-            id: _commitId,
+        commitments[_modelContentId].push(_commitmentId);
+        proverAddressToCommitments[msg.sender].push(_commitmentId);
+        commitmentIdToCommitment[_commitmentId] = Commitment({
+            id: _commitmentId,
             modelContentId: _modelContentId,
             merkleRoot: _merkleRoot,
             challenge: _challenge,
@@ -260,24 +266,24 @@ contract Verifier is IVerifier, Ownable {
             isRevealed: false
         });
 
-        emit CommitAdded(_commitId, msg.sender);
+        emit Committed(_commitmentId, msg.sender);
 
-        return (_commitId, _challenge, _difficulty);
+        return (_commitmentId, _challenge, _difficulty);
     }
 
-    function getCommit(
-        Hash _commitId
+    function getCommitment(
+        Hash _commitmentId
     )
         external
         view
-        checkIfCommitExists(_commitId)
+        checkIfCommitmentExists(_commitmentId)
         onlyOwner
-        returns (Commit memory)
+        returns (Commitment memory)
     {
-        return commitIdToCommit[_commitId];
+        return commitmentIdToCommitment[_commitmentId];
     }
 
-    function getCommitsOfModel(
+    function getCommitmentsOfModel(
         Hash _modelContentId,
         uint32 _offset,
         uint32 _limit
@@ -285,15 +291,16 @@ contract Verifier is IVerifier, Ownable {
         external
         view
         checkIfModelExists(_modelContentId)
-        validateOffsetParameter(_offset, commits[_modelContentId].length)
+        validateOffsetParameter(_offset, commitments[_modelContentId].length)
         validateLimitParameter(_limit)
         onlyOwner
         returns (Hash[] memory)
     {
-        return _paginateCommits(commits[_modelContentId], _offset, _limit);
+        return
+            _paginateCommitments(commitments[_modelContentId], _offset, _limit);
     }
 
-    function getCommitsOfProver(
+    function getCommitmentsOfProver(
         address _proverAddress,
         uint32 _offset,
         uint32 _limit
@@ -302,34 +309,34 @@ contract Verifier is IVerifier, Ownable {
         view
         validateOffsetParameter(
             _offset,
-            proverAddressToCommits[_proverAddress].length
+            proverAddressToCommitments[_proverAddress].length
         )
         validateLimitParameter(_limit)
         isValidProver(_proverAddress)
         returns (Hash[] memory)
     {
         return
-            _paginateCommits(
-                proverAddressToCommits[_proverAddress],
+            _paginateCommitments(
+                proverAddressToCommitments[_proverAddress],
                 _offset,
                 _limit
             );
     }
 
     function updateChallenge(
-        Hash _commitId
+        Hash _commitmentId
     )
         external
-        checkIfCommitExists(_commitId)
-        isValidProver(commitIdToCommit[_commitId].proverAddress)
+        checkIfCommitmentExists(_commitmentId)
+        isValidProver(commitmentIdToCommitment[_commitmentId].proverAddress)
         returns (Hash)
     {
         uint8 _difficulty = difficulty;
         Hash _challenge = Hash.wrap(Challenge.generateChallenge(_difficulty));
-        commitIdToCommit[_commitId].challenge = _challenge;
-        commitIdToCommit[_commitId].difficulty = _difficulty;
+        commitmentIdToCommitment[_commitmentId].challenge = _challenge;
+        commitmentIdToCommitment[_commitmentId].difficulty = _difficulty;
 
-        emit ChallengeUpdated(_commitId, msg.sender);
+        emit ChallengeUpdated(_commitmentId, msg.sender);
 
         return _challenge;
     }
@@ -345,29 +352,31 @@ contract Verifier is IVerifier, Ownable {
     }
 
     function reveal(
-        Hash _commitId,
+        Hash _commitmentId,
         bytes32[] calldata _merkleProofs,
         bool[] calldata _proofFlags,
         bytes32[] memory _leaves
     )
         external
-        checkIfCommitExists(_commitId)
-        isValidProver(commitIdToCommit[_commitId].proverAddress)
+        checkIfCommitmentExists(_commitmentId)
+        isValidProver(commitmentIdToCommitment[_commitmentId].proverAddress)
     {
         require(
-            commitIdToCommit[_commitId].isRevealed == false,
-            "commit already revealed"
+            commitmentIdToCommitment[_commitmentId].isRevealed == false,
+            "commitment already revealed"
         );
 
-        bytes32 _challenge = Hash.unwrap(commitIdToCommit[_commitId].challenge);
-        uint8 _difficulty = commitIdToCommit[_commitId].difficulty;
+        bytes32 _challenge = Hash.unwrap(
+            commitmentIdToCommitment[_commitmentId].challenge
+        );
+        uint8 _difficulty = commitmentIdToCommitment[_commitmentId].difficulty;
         require(
             MerkleTree.verifyLeaves(_challenge, _difficulty, _leaves) == true,
             "invalid leaves"
         );
 
         bytes32 _merkleRoot = Hash.unwrap(
-            commitIdToCommit[_commitId].merkleRoot
+            commitmentIdToCommitment[_commitmentId].merkleRoot
         );
 
         require(
@@ -380,9 +389,9 @@ contract Verifier is IVerifier, Ownable {
             "invalid Merkle proofs"
         );
 
-        commitIdToCommit[_commitId].isRevealed = true;
+        commitmentIdToCommitment[_commitmentId].isRevealed = true;
 
-        emit CommitRevealed(_commitId, msg.sender);
+        emit CommitmentRevealed(_commitmentId, msg.sender);
     }
 
     // TODO: enable solhint
@@ -422,46 +431,46 @@ contract Verifier is IVerifier, Ownable {
         return _paginatedModels;
     }
 
-    /// @dev Paginate commits given array of commit IDs, offset and limit.
-    function _paginateCommits(
-        Hash[] memory _commitIds,
+    /// @dev Paginate commitments given array of commitment IDs, offset and limit.
+    function _paginateCommitments(
+        Hash[] memory _commitmentIds,
         uint32 _offset,
         uint32 _limit
     ) internal pure returns (Hash[] memory) {
-        if (_offset + _limit > _commitIds.length) {
-            _limit = uint32(_commitIds.length - _offset);
+        if (_offset + _limit > _commitmentIds.length) {
+            _limit = uint32(_commitmentIds.length - _offset);
         }
 
-        Hash[] memory _paginatedCommits = new Hash[](_limit);
+        Hash[] memory _paginatedCommitments = new Hash[](_limit);
         for (uint32 i = 0; i < _limit; i++) {
-            _paginatedCommits[i] = _commitIds[_offset + i];
+            _paginatedCommitments[i] = _commitmentIds[_offset + i];
         }
 
-        return _paginatedCommits;
+        return _paginatedCommitments;
     }
 
     /**
-     * @notice Generate commit ID.
-     * @dev Duplicated commit ID is not allowed.
+     * @notice Generate commitment ID.
+     * @dev Duplicated commitment ID is not allowed.
      * @param _modelContentId Hash (content ID / address of IPFS) of model
      * @param _merkleRoot Root hash of Merkle tree
-     * @return commitId Commit ID
+     * @return commitmentId Commitment ID
      */
-    function _generateCommitId(
+    function _generateCommitmentId(
         Hash _modelContentId,
         Hash _merkleRoot
     ) internal view returns (Hash) {
-        Hash _commitId = Hash.wrap(
+        Hash _commitmentId = Hash.wrap(
             keccak256(
                 abi.encodePacked(_modelContentId, _merkleRoot, msg.sender)
             )
         );
 
         require(
-            Hash.unwrap(commitIdToCommit[_commitId].id) == "",
-            "commit already exists"
+            Hash.unwrap(commitmentIdToCommitment[_commitmentId].id) == "",
+            "commitment already exists"
         );
 
-        return _commitId;
+        return _commitmentId;
     }
 }
