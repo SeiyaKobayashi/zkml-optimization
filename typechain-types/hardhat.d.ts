@@ -21,9 +21,17 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IVerifier__factory>;
     getContractFactory(
+      name: "IVerifierFactory",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IVerifierFactory__factory>;
+    getContractFactory(
       name: "Verifier",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Verifier__factory>;
+    getContractFactory(
+      name: "VerifierFactory",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.VerifierFactory__factory>;
 
     getContractAt(
       name: "Ownable",
@@ -36,10 +44,20 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IVerifier>;
     getContractAt(
+      name: "IVerifierFactory",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IVerifierFactory>;
+    getContractAt(
       name: "Verifier",
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.Verifier>;
+    getContractAt(
+      name: "VerifierFactory",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.VerifierFactory>;
 
     // default types
     getContractFactory(

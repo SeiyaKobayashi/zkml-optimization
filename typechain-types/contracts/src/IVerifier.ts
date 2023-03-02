@@ -24,6 +24,34 @@ import type {
 } from "../../common";
 
 export declare namespace IVerifier {
+  export type CommitmentStruct = {
+    id: PromiseOrValue<BytesLike>;
+    modelContentId: PromiseOrValue<BytesLike>;
+    merkleRoot: PromiseOrValue<BytesLike>;
+    challenge: PromiseOrValue<BytesLike>;
+    difficulty: PromiseOrValue<BigNumberish>;
+    proverAddress: PromiseOrValue<string>;
+    isRevealed: PromiseOrValue<boolean>;
+  };
+
+  export type CommitmentStructOutput = [
+    string,
+    string,
+    string,
+    string,
+    number,
+    string,
+    boolean
+  ] & {
+    id: string;
+    modelContentId: string;
+    merkleRoot: string;
+    challenge: string;
+    difficulty: number;
+    proverAddress: string;
+    isRevealed: boolean;
+  };
+
   export type ModelStruct = {
     contentId: PromiseOrValue<BytesLike>;
     name: PromiseOrValue<string>;
@@ -38,26 +66,6 @@ export declare namespace IVerifier {
     description: string;
     ownerAddress: string;
     isDisabled: boolean;
-  };
-
-  export type ModelArrayElementStruct = {
-    contentId: PromiseOrValue<BytesLike>;
-    name: PromiseOrValue<string>;
-  };
-
-  export type ModelArrayElementStructOutput = [string, string] & {
-    contentId: string;
-    name: string;
-  };
-
-  export type MerkleProofStruct = {
-    leaf: PromiseOrValue<BytesLike>;
-    proof: PromiseOrValue<BytesLike>[];
-  };
-
-  export type MerkleProofStructOutput = [string, string[]] & {
-    leaf: string;
-    proof: string[];
   };
 
   export type ZkpStruct = {
@@ -95,14 +103,18 @@ export declare namespace IVerifier {
 
 export interface IVerifierInterface extends utils.Interface {
   functions: {
-    "commit(bytes32,bytes32,bytes32)": FunctionFragment;
-    "disableModel(bytes32)": FunctionFragment;
-    "getModel(bytes32)": FunctionFragment;
-    "getModels(uint32,uint32)": FunctionFragment;
-    "getModelsByOwnerAddress(address,uint32,uint32)": FunctionFragment;
-    "registerModel(bytes32,string,string)": FunctionFragment;
-    "reveal(uint256,(bytes32,bytes32[])[])": FunctionFragment;
-    "updateModel(bytes32,string,string)": FunctionFragment;
+    "commit(bytes32)": FunctionFragment;
+    "disableModel()": FunctionFragment;
+    "getCommitment(bytes32)": FunctionFragment;
+    "getCommitmentsOfModel(uint32,uint32)": FunctionFragment;
+    "getCommitmentsOfProver(uint32,uint32)": FunctionFragment;
+    "getDifficulty()": FunctionFragment;
+    "getModel()": FunctionFragment;
+    "registerModel(bytes32,string,string,address)": FunctionFragment;
+    "reveal(bytes32,bytes32[],bool[],bytes32[])": FunctionFragment;
+    "updateChallenge(bytes32)": FunctionFragment;
+    "updateDifficulty(uint8)": FunctionFragment;
+    "updateModel(string,string)": FunctionFragment;
     "verify(uint256,(uint256[2],uint256[2][2],uint256[2],uint256[16])[])": FunctionFragment;
   };
 
@@ -110,62 +122,73 @@ export interface IVerifierInterface extends utils.Interface {
     nameOrSignatureOrTopic:
       | "commit"
       | "disableModel"
+      | "getCommitment"
+      | "getCommitmentsOfModel"
+      | "getCommitmentsOfProver"
+      | "getDifficulty"
       | "getModel"
-      | "getModels"
-      | "getModelsByOwnerAddress"
       | "registerModel"
       | "reveal"
+      | "updateChallenge"
+      | "updateDifficulty"
       | "updateModel"
       | "verify"
   ): FunctionFragment;
 
   encodeFunctionData(
     functionFragment: "commit",
-    values: [
-      PromiseOrValue<BytesLike>,
-      PromiseOrValue<BytesLike>,
-      PromiseOrValue<BytesLike>
-    ]
+    values: [PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(
     functionFragment: "disableModel",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getCommitment",
     values: [PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(
-    functionFragment: "getModel",
-    values: [PromiseOrValue<BytesLike>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getModels",
+    functionFragment: "getCommitmentsOfModel",
     values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
-    functionFragment: "getModelsByOwnerAddress",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>,
-      PromiseOrValue<BigNumberish>
-    ]
+    functionFragment: "getCommitmentsOfProver",
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
   ): string;
+  encodeFunctionData(
+    functionFragment: "getDifficulty",
+    values?: undefined
+  ): string;
+  encodeFunctionData(functionFragment: "getModel", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "registerModel",
     values: [
       PromiseOrValue<BytesLike>,
+      PromiseOrValue<string>,
       PromiseOrValue<string>,
       PromiseOrValue<string>
     ]
   ): string;
   encodeFunctionData(
     functionFragment: "reveal",
-    values: [PromiseOrValue<BigNumberish>, IVerifier.MerkleProofStruct[]]
+    values: [
+      PromiseOrValue<BytesLike>,
+      PromiseOrValue<BytesLike>[],
+      PromiseOrValue<boolean>[],
+      PromiseOrValue<BytesLike>[]
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "updateChallenge",
+    values: [PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "updateDifficulty",
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "updateModel",
-    values: [
-      PromiseOrValue<BytesLike>,
-      PromiseOrValue<string>,
-      PromiseOrValue<string>
-    ]
+    values: [PromiseOrValue<string>, PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "verify",
@@ -177,17 +200,36 @@ export interface IVerifierInterface extends utils.Interface {
     functionFragment: "disableModel",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "getModel", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "getModels", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "getModelsByOwnerAddress",
+    functionFragment: "getCommitment",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "getCommitmentsOfModel",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getCommitmentsOfProver",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getDifficulty",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "getModel", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "registerModel",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "reveal", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "updateChallenge",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "updateDifficulty",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "updateModel",
     data: BytesLike
@@ -225,62 +267,64 @@ export interface IVerifier extends BaseContract {
 
   functions: {
     commit(
-      commitmentModel: PromiseOrValue<BytesLike>,
-      commitmentData: PromiseOrValue<BytesLike>,
-      commitmentResults: PromiseOrValue<BytesLike>,
+      _merkleRoot: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     disableModel(
-      modelContentId: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    getModel(
-      modelContentId: PromiseOrValue<BytesLike>,
+    getCommitment(
+      _commitmentId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
-    ): Promise<
-      [IVerifier.ModelStructOutput] & { model: IVerifier.ModelStructOutput }
-    >;
+    ): Promise<[IVerifier.CommitmentStructOutput]>;
 
-    getModels(
-      offset: PromiseOrValue<BigNumberish>,
-      limit: PromiseOrValue<BigNumberish>,
+    getCommitmentsOfModel(
+      _offset: PromiseOrValue<BigNumberish>,
+      _limit: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<
-      [IVerifier.ModelArrayElementStructOutput[]] & {
-        models: IVerifier.ModelArrayElementStructOutput[];
-      }
-    >;
+    ): Promise<[string[]]>;
 
-    getModelsByOwnerAddress(
-      ownerAddress: PromiseOrValue<string>,
-      offset: PromiseOrValue<BigNumberish>,
-      limit: PromiseOrValue<BigNumberish>,
+    getCommitmentsOfProver(
+      _offset: PromiseOrValue<BigNumberish>,
+      _limit: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<
-      [IVerifier.ModelArrayElementStructOutput[]] & {
-        models: IVerifier.ModelArrayElementStructOutput[];
-      }
-    >;
+    ): Promise<[string[]]>;
+
+    getDifficulty(overrides?: CallOverrides): Promise<[number]>;
+
+    getModel(overrides?: CallOverrides): Promise<[IVerifier.ModelStructOutput]>;
 
     registerModel(
-      modelContentId: PromiseOrValue<BytesLike>,
-      modelName: PromiseOrValue<string>,
-      modelDescription: PromiseOrValue<string>,
+      _modelContentId: PromiseOrValue<BytesLike>,
+      _modelName: PromiseOrValue<string>,
+      _modelDescription: PromiseOrValue<string>,
+      _modelOwnerAddress: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     reveal(
-      commitmentId: PromiseOrValue<BigNumberish>,
-      merkleProofs: IVerifier.MerkleProofStruct[],
-      overrides?: CallOverrides
-    ): Promise<[string[]] & { verifiedNodes: string[] }>;
+      _commitmentId: PromiseOrValue<BytesLike>,
+      _merkleProofs: PromiseOrValue<BytesLike>[],
+      _proofFlags: PromiseOrValue<boolean>[],
+      _leaves: PromiseOrValue<BytesLike>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    updateChallenge(
+      _commitmentId: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    updateDifficulty(
+      _difficulty: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     updateModel(
-      modelContentId: PromiseOrValue<BytesLike>,
-      modelName: PromiseOrValue<string>,
-      modelDescription: PromiseOrValue<string>,
+      _modelName: PromiseOrValue<string>,
+      _modelDescription: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -292,52 +336,64 @@ export interface IVerifier extends BaseContract {
   };
 
   commit(
-    commitmentModel: PromiseOrValue<BytesLike>,
-    commitmentData: PromiseOrValue<BytesLike>,
-    commitmentResults: PromiseOrValue<BytesLike>,
+    _merkleRoot: PromiseOrValue<BytesLike>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   disableModel(
-    modelContentId: PromiseOrValue<BytesLike>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  getModel(
-    modelContentId: PromiseOrValue<BytesLike>,
+  getCommitment(
+    _commitmentId: PromiseOrValue<BytesLike>,
     overrides?: CallOverrides
-  ): Promise<IVerifier.ModelStructOutput>;
+  ): Promise<IVerifier.CommitmentStructOutput>;
 
-  getModels(
-    offset: PromiseOrValue<BigNumberish>,
-    limit: PromiseOrValue<BigNumberish>,
+  getCommitmentsOfModel(
+    _offset: PromiseOrValue<BigNumberish>,
+    _limit: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
-  ): Promise<IVerifier.ModelArrayElementStructOutput[]>;
+  ): Promise<string[]>;
 
-  getModelsByOwnerAddress(
-    ownerAddress: PromiseOrValue<string>,
-    offset: PromiseOrValue<BigNumberish>,
-    limit: PromiseOrValue<BigNumberish>,
+  getCommitmentsOfProver(
+    _offset: PromiseOrValue<BigNumberish>,
+    _limit: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
-  ): Promise<IVerifier.ModelArrayElementStructOutput[]>;
+  ): Promise<string[]>;
+
+  getDifficulty(overrides?: CallOverrides): Promise<number>;
+
+  getModel(overrides?: CallOverrides): Promise<IVerifier.ModelStructOutput>;
 
   registerModel(
-    modelContentId: PromiseOrValue<BytesLike>,
-    modelName: PromiseOrValue<string>,
-    modelDescription: PromiseOrValue<string>,
+    _modelContentId: PromiseOrValue<BytesLike>,
+    _modelName: PromiseOrValue<string>,
+    _modelDescription: PromiseOrValue<string>,
+    _modelOwnerAddress: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   reveal(
-    commitmentId: PromiseOrValue<BigNumberish>,
-    merkleProofs: IVerifier.MerkleProofStruct[],
-    overrides?: CallOverrides
-  ): Promise<string[]>;
+    _commitmentId: PromiseOrValue<BytesLike>,
+    _merkleProofs: PromiseOrValue<BytesLike>[],
+    _proofFlags: PromiseOrValue<boolean>[],
+    _leaves: PromiseOrValue<BytesLike>[],
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  updateChallenge(
+    _commitmentId: PromiseOrValue<BytesLike>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  updateDifficulty(
+    _difficulty: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   updateModel(
-    modelContentId: PromiseOrValue<BytesLike>,
-    modelName: PromiseOrValue<string>,
-    modelDescription: PromiseOrValue<string>,
+    _modelName: PromiseOrValue<string>,
+    _modelDescription: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -349,54 +405,62 @@ export interface IVerifier extends BaseContract {
 
   callStatic: {
     commit(
-      commitmentModel: PromiseOrValue<BytesLike>,
-      commitmentData: PromiseOrValue<BytesLike>,
-      commitmentResults: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, string] & { commitmentId: BigNumber; challenge: string }
-    >;
-
-    disableModel(
-      modelContentId: PromiseOrValue<BytesLike>,
+      _merkleRoot: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    getModel(
-      modelContentId: PromiseOrValue<BytesLike>,
-      overrides?: CallOverrides
-    ): Promise<IVerifier.ModelStructOutput>;
+    disableModel(overrides?: CallOverrides): Promise<void>;
 
-    getModels(
-      offset: PromiseOrValue<BigNumberish>,
-      limit: PromiseOrValue<BigNumberish>,
+    getCommitment(
+      _commitmentId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
-    ): Promise<IVerifier.ModelArrayElementStructOutput[]>;
+    ): Promise<IVerifier.CommitmentStructOutput>;
 
-    getModelsByOwnerAddress(
-      ownerAddress: PromiseOrValue<string>,
-      offset: PromiseOrValue<BigNumberish>,
-      limit: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<IVerifier.ModelArrayElementStructOutput[]>;
-
-    registerModel(
-      modelContentId: PromiseOrValue<BytesLike>,
-      modelName: PromiseOrValue<string>,
-      modelDescription: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<IVerifier.ModelStructOutput>;
-
-    reveal(
-      commitmentId: PromiseOrValue<BigNumberish>,
-      merkleProofs: IVerifier.MerkleProofStruct[],
+    getCommitmentsOfModel(
+      _offset: PromiseOrValue<BigNumberish>,
+      _limit: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<string[]>;
 
+    getCommitmentsOfProver(
+      _offset: PromiseOrValue<BigNumberish>,
+      _limit: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<string[]>;
+
+    getDifficulty(overrides?: CallOverrides): Promise<number>;
+
+    getModel(overrides?: CallOverrides): Promise<IVerifier.ModelStructOutput>;
+
+    registerModel(
+      _modelContentId: PromiseOrValue<BytesLike>,
+      _modelName: PromiseOrValue<string>,
+      _modelDescription: PromiseOrValue<string>,
+      _modelOwnerAddress: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    reveal(
+      _commitmentId: PromiseOrValue<BytesLike>,
+      _merkleProofs: PromiseOrValue<BytesLike>[],
+      _proofFlags: PromiseOrValue<boolean>[],
+      _leaves: PromiseOrValue<BytesLike>[],
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    updateChallenge(
+      _commitmentId: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    updateDifficulty(
+      _difficulty: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     updateModel(
-      modelContentId: PromiseOrValue<BytesLike>,
-      modelName: PromiseOrValue<string>,
-      modelDescription: PromiseOrValue<string>,
+      _modelName: PromiseOrValue<string>,
+      _modelDescription: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -411,52 +475,64 @@ export interface IVerifier extends BaseContract {
 
   estimateGas: {
     commit(
-      commitmentModel: PromiseOrValue<BytesLike>,
-      commitmentData: PromiseOrValue<BytesLike>,
-      commitmentResults: PromiseOrValue<BytesLike>,
+      _merkleRoot: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     disableModel(
-      modelContentId: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    getModel(
-      modelContentId: PromiseOrValue<BytesLike>,
+    getCommitment(
+      _commitmentId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getModels(
-      offset: PromiseOrValue<BigNumberish>,
-      limit: PromiseOrValue<BigNumberish>,
+    getCommitmentsOfModel(
+      _offset: PromiseOrValue<BigNumberish>,
+      _limit: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getModelsByOwnerAddress(
-      ownerAddress: PromiseOrValue<string>,
-      offset: PromiseOrValue<BigNumberish>,
-      limit: PromiseOrValue<BigNumberish>,
+    getCommitmentsOfProver(
+      _offset: PromiseOrValue<BigNumberish>,
+      _limit: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    getDifficulty(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getModel(overrides?: CallOverrides): Promise<BigNumber>;
 
     registerModel(
-      modelContentId: PromiseOrValue<BytesLike>,
-      modelName: PromiseOrValue<string>,
-      modelDescription: PromiseOrValue<string>,
+      _modelContentId: PromiseOrValue<BytesLike>,
+      _modelName: PromiseOrValue<string>,
+      _modelDescription: PromiseOrValue<string>,
+      _modelOwnerAddress: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     reveal(
-      commitmentId: PromiseOrValue<BigNumberish>,
-      merkleProofs: IVerifier.MerkleProofStruct[],
-      overrides?: CallOverrides
+      _commitmentId: PromiseOrValue<BytesLike>,
+      _merkleProofs: PromiseOrValue<BytesLike>[],
+      _proofFlags: PromiseOrValue<boolean>[],
+      _leaves: PromiseOrValue<BytesLike>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    updateChallenge(
+      _commitmentId: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    updateDifficulty(
+      _difficulty: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     updateModel(
-      modelContentId: PromiseOrValue<BytesLike>,
-      modelName: PromiseOrValue<string>,
-      modelDescription: PromiseOrValue<string>,
+      _modelName: PromiseOrValue<string>,
+      _modelDescription: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -469,52 +545,64 @@ export interface IVerifier extends BaseContract {
 
   populateTransaction: {
     commit(
-      commitmentModel: PromiseOrValue<BytesLike>,
-      commitmentData: PromiseOrValue<BytesLike>,
-      commitmentResults: PromiseOrValue<BytesLike>,
+      _merkleRoot: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     disableModel(
-      modelContentId: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    getModel(
-      modelContentId: PromiseOrValue<BytesLike>,
+    getCommitment(
+      _commitmentId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getModels(
-      offset: PromiseOrValue<BigNumberish>,
-      limit: PromiseOrValue<BigNumberish>,
+    getCommitmentsOfModel(
+      _offset: PromiseOrValue<BigNumberish>,
+      _limit: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getModelsByOwnerAddress(
-      ownerAddress: PromiseOrValue<string>,
-      offset: PromiseOrValue<BigNumberish>,
-      limit: PromiseOrValue<BigNumberish>,
+    getCommitmentsOfProver(
+      _offset: PromiseOrValue<BigNumberish>,
+      _limit: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    getDifficulty(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getModel(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     registerModel(
-      modelContentId: PromiseOrValue<BytesLike>,
-      modelName: PromiseOrValue<string>,
-      modelDescription: PromiseOrValue<string>,
+      _modelContentId: PromiseOrValue<BytesLike>,
+      _modelName: PromiseOrValue<string>,
+      _modelDescription: PromiseOrValue<string>,
+      _modelOwnerAddress: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     reveal(
-      commitmentId: PromiseOrValue<BigNumberish>,
-      merkleProofs: IVerifier.MerkleProofStruct[],
-      overrides?: CallOverrides
+      _commitmentId: PromiseOrValue<BytesLike>,
+      _merkleProofs: PromiseOrValue<BytesLike>[],
+      _proofFlags: PromiseOrValue<boolean>[],
+      _leaves: PromiseOrValue<BytesLike>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateChallenge(
+      _commitmentId: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateDifficulty(
+      _difficulty: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     updateModel(
-      modelContentId: PromiseOrValue<BytesLike>,
-      modelName: PromiseOrValue<string>,
-      modelDescription: PromiseOrValue<string>,
+      _modelName: PromiseOrValue<string>,
+      _modelDescription: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

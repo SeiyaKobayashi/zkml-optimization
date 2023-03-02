@@ -18,16 +18,15 @@ interface IVerifier {
         bool isDisabled;
     }
 
-    /// @dev Holds simplified model details
-    struct ModelArrayElement {
-        Hash contentId;
-        string name;
-    }
-
-    /// @dev Holds value of the matched leaf node and its Merkle proof (values of its Merkle path)
-    struct MerkleProof {
-        Hash leaf;
-        Hash[] proof;
+    /// @dev Holds commitment details
+    struct Commitment {
+        Hash id;
+        Hash modelContentId;
+        Hash merkleRoot;
+        Hash challenge;
+        uint8 difficulty;
+        address proverAddress;
+        bool isRevealed;
     }
 
     // TODO: check exact types
@@ -47,100 +46,118 @@ interface IVerifier {
     }
 
     /**
-     * @notice Registers a model in the verifier contract.
+     * @notice Register a model.
      * @dev Registered model is enabled by default.
-     * @param modelContentId Hash (content ID / address of IPFS) of model
-     * @param modelName Name of model
-     * @param modelDescription Description of model
-     * @return model Registered model
+     * @param _modelContentId Hash (content ID / address of IPFS) of model
+     * @param _modelName Name of model
+     * @param _modelDescription Description of model
+     * @param _modelOwnerAddress Owner address of model
      */
     function registerModel(
-        Hash modelContentId,
-        string calldata modelName,
-        string calldata modelDescription
-    ) external returns (Model memory model);
+        Hash _modelContentId,
+        string calldata _modelName,
+        string calldata _modelDescription,
+        address _modelOwnerAddress
+    ) external;
 
     /**
      * @notice Get info of the requested model.
-     * @param modelContentId Hash (content ID / address of IPFS) of model
      * @return model Info of the requested model
      */
-    function getModel(
-        Hash modelContentId
-    ) external view returns (Model memory model);
-
-    /**
-     * @notice Get the list of models registered.
-     * @dev Max value of `limit` parameter is 30 for the sake of performance.
-     * @param offset Starting index of array of models to be fetched
-     * @param limit Number of models to fetch
-     * @return models List of models
-     */
-    function getModels(
-        uint32 offset,
-        uint32 limit
-    ) external view returns (ModelArrayElement[] memory models);
-
-    /**
-     * @notice Get the list of models registered by the specified owner.
-     * @dev Max value of `limit` parameter is 30 for the sake of performance.
-     * @param ownerAddress Address of model owner
-     * @param offset Starting index of array of models to be fetched
-     * @param limit Number of models to fetch
-     * @return models List of models
-     */
-    function getModelsByOwnerAddress(
-        address ownerAddress,
-        uint32 offset,
-        uint32 limit
-    ) external view returns (ModelArrayElement[] memory models);
+    function getModel() external view returns (Model memory);
 
     /**
      * @notice Update info of the requested model.
      * @dev 'contentId' & 'ownerAddress' cannot be updated.
-     * @param modelContentId Hash (content ID / address of IPFS) of model
-     * @param modelName Updated name of model
-     * @param modelDescription Updated description of model
+     * @param _modelName Updated name of model
+     * @param _modelDescription Updated description of model
      */
     function updateModel(
-        Hash modelContentId,
-        string calldata modelName,
-        string calldata modelDescription
+        string calldata _modelName,
+        string calldata _modelDescription
     ) external;
 
     /**
      * @notice Disable the requested model.
      * @dev Model is logically disabled.
-     * @param modelContentId Hash (content ID / address of IPFS) of model
      */
-    function disableModel(Hash modelContentId) external;
+    function disableModel() external;
 
     /**
-     * @notice Receives and stores commitments of testing results. Generates a random challenge in return.
-     * @dev Need to consider setting thresholds when generating a random challenge. Fine-tune them accordingly.
-     * @param commitmentModel Hash value of URL of targeted model
-     * @param commitmentData Hash value of testing data
-     * @param commitmentResults Root hash value of Merkle tree of testing results
-     * @return commitmentId commitment ID (need to provide when calling 'reveal()' & 'verify()')
-     * @return challenge Random challenge
+     * @notice Store commitment of testing results, and generate a challenge in return.
+     * @dev 'commitmentId' is generated from '_modelContentId', '_merkleRoot' and sender's address.
+     * @param _merkleRoot Root hash of Merkle tree of testing results
      */
-    function commit(
-        bytes32 commitmentModel,
-        bytes32 commitmentData,
-        bytes32 commitmentResults
-    ) external returns (uint256 commitmentId, bytes32 challenge);
+    function commit(Hash _merkleRoot) external;
 
     /**
-     * @notice Receives and verifies Merkle proofs matched with the random challenge.
-     * @dev Use https://docs.openzeppelin.com/contracts/4.x/api/utils#MerkleProof to verify Merkle proofs.
-     * @param commitmentId commitment ID
-     * @param merkleProofs Array of Merkle proofs matched with the random challenge
-     * @return verifiedNodes Array of hash values of the verified nodes
+     * @notice Get commitment details.
+     * @dev This function can only be callable by the contract owner.
+     * @param _commitmentId commitment ID
+     * @return commitment commitment details
+     */
+    function getCommitment(
+        Hash _commitmentId
+    ) external view returns (Commitment memory);
+
+    /**
+     * @notice Get commitment IDs of the specified model.
+     * @dev This function can only be callable by the contract owner.
+     * @param _offset Starting index of array of commitments to be fetched
+     * @param _limit Number of commitments to be fetched
+     * @return commitments Array of commitment IDs
+     */
+    function getCommitmentsOfModel(
+        uint32 _offset,
+        uint32 _limit
+    ) external view returns (Hash[] memory);
+
+    /**
+     * @notice Get commitment IDs of the specified prover.
+     * @param _offset Starting index of array of commitments to be fetched
+     * @param _limit Number of commitments to fetch
+     * @return commitments Array of commitment IDs
+     */
+    function getCommitmentsOfProver(
+        uint32 _offset,
+        uint32 _limit
+    ) external view returns (Hash[] memory);
+
+    /**
+     * @notice Update challenge of the specified commitment.
+     * @param _commitmentId Commitment ID
+     */
+    function updateChallenge(Hash _commitmentId) external;
+
+    /**
+     * @notice Get difficulty of challenge (number of bits of challenge to be verified).
+     * @dev This function can only be callable by the contract owner.
+     * @return difficulty Difficulty of challenge
+     */
+    function getDifficulty() external view returns (uint8);
+
+    /**
+     * @notice Update difficulty of challenge (number of bits of challenge to be verified).
+     * @dev This function can only be callable by the contract owner.
+     *      Already generated (committed) challenges must not be modified.
+     *      Max value is 256, because bytes32 consists of 256 bits.
+     * @param _difficulty Difficulty of challenge
+     */
+    function updateDifficulty(uint8 _difficulty) external;
+
+    /**
+     * @notice Verify Merkle proofs of leaves matched with the challenge.
+     * @param _commitmentId commitment ID
+     * @param _merkleProofs Array of Merkle proofs
+     * @param _proofFlags Array of proof flags
+     * @param _leaves Array of Merkle leaves
      */
     function reveal(
-        uint256 commitmentId,
-        MerkleProof[] calldata merkleProofs
-    ) external view returns (Hash[] memory verifiedNodes);
+        Hash _commitmentId,
+        bytes32[] calldata _merkleProofs,
+        bool[] calldata _proofFlags,
+        bytes32[] memory _leaves
+    ) external;
 
     /**
      * @notice Receives and verifies ZKPs.
