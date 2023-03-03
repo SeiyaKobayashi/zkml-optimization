@@ -12,12 +12,13 @@ on:
       - 'contracts/**'
       - '!contracts/README.md'
 
+env:
+  target-directory: ./contracts
+
 defaults:
   run:
     shell: bash
-
-env:
-  target-directory: ./contracts
+    working-directory: ./contracts
 
 jobs:
   check:
@@ -31,13 +32,10 @@ jobs:
           working-directory: ${{ env.target-directory }}
       - name: Compile
         run: yarn compile
-        working-directory: ${{ env.target-directory }}
       - name: Lint
         run: yarn lint
-        working-directory: ${{ env.target-directory }}
       - name: Format
         run: yarn prettify
-        working-directory: ${{ env.target-directory }}
 
   test:
     runs-on: ubuntu-latest
@@ -50,4 +48,3 @@ jobs:
           working-directory: ${{ env.target-directory }}
       - name: Run Tests
         run: yarn test
-        working-directory: ${{ env.target-directory }}
