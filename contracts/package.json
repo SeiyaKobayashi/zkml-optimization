@@ -1,7 +1,7 @@
 {
   "name": "contracts",
   "version": "1.0.0",
-  "repository": "https://SeiyaKobayashi@github.com/SeiyaKobayashi/training-optimization-on-ml-model-with-zkp.git",
+  "repository": "https://SeiyaKobayashi@github.com/SeiyaKobayashi/zkml-optimization.git",
   "author": "SeiyaKobayashi <seiya.kobayashi.work@gmail.com>",
   "license": "MIT",
   "private": true,
