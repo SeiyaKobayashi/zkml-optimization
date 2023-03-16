@@ -1,6 +1,10 @@
 # Verifier Contracts
 
-Directory to place source code (including test code) of verifier's smart contract.
+Directory to place source code (including test code) of smart contracts of verifier.
+
+## Architecture Diagram
+
+![Verifier](../docs/v1/arch-diagram-verifier.png "verifier")
 
 ## Prerequisite
 
@@ -32,4 +36,10 @@ $ yarn prettify
 
 ```sh
 $ yarn test
+```
+
+## Generating Test Coverage
+
+```sh
+$ yarn coverage
 ```

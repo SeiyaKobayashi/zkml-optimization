@@ -1,18 +1,25 @@
-# training-optimization-on-ml-model-with-zkp
+# zkml-optimization
 
-Training Optimization on Neural Networks with ZKP
+Optimization for on-chain private machine learning.
 
-## Architecture Diagram
+## Architecture Diagrams
 
-![Architecture Diagram](./docs/arch-diagram-v1.png "architecture diagram")
+### Architecture Diagram of Verifier
+![Verifier](./docs/v1/arch-diagram-verifier.png "verifier")
+
+### Architecture Diagram of Prover
+![Prover](./docs/v1/arch-diagram-prover.png "prover")
+
+### Architecture Diagram of Model Developer
+![Model Developer](./docs/v1/arch-diagram-model-developer.png "model developer")
 
 ## Prerequisite
 
-All commands in this `README` (except this section) are assumed to be called from root directory.
+All commands in this `README` (except this section) are assumed to be called from the root directory.
 
 ```sh
 # cd into this repo
-$ cd training-optimization-on-ml-model-with-zkp
+$ cd zkml-optimization
 ```
 
 ## Installation
