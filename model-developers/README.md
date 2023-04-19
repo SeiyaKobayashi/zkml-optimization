@@ -8,6 +8,7 @@ Setup procedures for using this program as model developers.
 
 ## 0. Installation
 
+- Read and follow instructions of `circuits` directory first (i.e. **Need to clone `.ptau` file into `circuits` directory**).
 - Run the following commands **for the first time only**, where `xxx` refers to the name of binary of your local environment. See the list of binaries available from [here](https://dist.ipfs.tech/#go-ipfs) (the first command fetches masOS binary by default, if `IPFS_BINARY` is not specified).
 - We are using [IPFS](https://ipfs.tech/) for storing and sharing static assets distributively.  
 
