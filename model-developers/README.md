@@ -54,10 +54,10 @@ Run the following commands, where each argument refers to the following.
 
 ```sh
 # connect to ipfs p2p network
-$ yarn connect-to-ipfs --CIRCUIT_NAME=${aaa} --MODEL_NAME=${bbb} --ZKEY_NAME=${ccc}
+$ yarn connect-to-ipfs
 
 # upload files to ipfs
-$ yarn upload-to-ipfs --CIRCUIT_NAME=${aaa}
+$ yarn upload-to-ipfs --CIRCUIT_NAME=${aaa} --MODEL_NAME=${bbb} --ZKEY_NAME=${ccc}
 ```
 
 ## 4. Registering Model to Verifier Contract
