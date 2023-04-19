@@ -10,7 +10,9 @@
   },
   "workspaces": [
     "contracts",
-    "clients"
+    "model-developers",
+    "provers",
+    "circuits"
   ],
   "scripts": {
     "prepare": "husky install"
