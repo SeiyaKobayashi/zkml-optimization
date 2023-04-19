@@ -1,8 +1,11 @@
 {
-  "name": "clients",
+  "name": "provers",
   "version": "1.0.0",
   "repository": "https://SeiyaKobayashi@github.com/SeiyaKobayashi/zkml-optimization.git",
   "author": "SeiyaKobayashi <seiya.kobayashi.work@gmail.com>",
   "license": "MIT",
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "snarkjs": "0.6.10"
+  }
 }
