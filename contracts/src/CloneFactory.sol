@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity 0.8.17;
+pragma solidity 0.8.19;
 
 /// @dev Copied from https://github.com/optionality/clone-factory/blob/master/contracts/CloneFactory.sol.
 

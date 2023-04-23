@@ -1,23 +1,11 @@
 {
-  "name": "zkml-optimization",
+  "name": "provers",
   "version": "1.0.0",
   "repository": "https://SeiyaKobayashi@github.com/SeiyaKobayashi/zkml-optimization.git",
   "author": "SeiyaKobayashi <seiya.kobayashi.work@gmail.com>",
   "license": "MIT",
   "private": true,
-  "engines": {
-    "node": "18.12.1"
-  },
-  "workspaces": [
-    "contracts",
-    "model-developers",
-    "provers",
-    "circuits"
-  ],
-  "scripts": {
-    "prepare": "husky install"
-  },
   "devDependencies": {
-    "husky": "8.0.3"
+    "snarkjs": "0.6.10"
   }
 }
