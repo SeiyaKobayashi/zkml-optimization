@@ -9,7 +9,8 @@
   "scripts": {
     "convert-keras-to-tf": "sh -c 'tensorflowjs_converter --input_format keras ../models/${0}.h5 ../models/${1}'",
     "encode-testing-results": "ts-node ./scripts/encode-testing-results.ts",
-    "generate-merkle-proofs": "ts-node ./scripts/generate-merkle-proofs.ts"
+    "generate-merkle-proofs": "ts-node ./scripts/generate-merkle-proofs.ts",
+    "generate-zkps": "ts-node ./scripts/generate-zkps.ts"
   },
   "devDependencies": {
     "@tensorflow/tfjs": "4.4.0",
