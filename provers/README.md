@@ -24,4 +24,10 @@ $ yarn encode-testing-results
 
 ## 2. Interacting with Verifier Contract
 
+```sh
+# generate Merkle proofs 
+$ yarn generate-merkle-proofs
 
+# generate ZKPs
+$ yarn generate-zkps
+```
