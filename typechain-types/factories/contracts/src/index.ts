@@ -4,7 +4,5 @@
 export { CustomVerifier__factory } from "./CustomVerifier__factory";
 export { ICircomVerifier__factory } from "./ICircomVerifier__factory";
 export { ICustomVerifier__factory } from "./ICustomVerifier__factory";
-export { IVerifier__factory } from "./IVerifier__factory";
 export { IVerifierFactory__factory } from "./IVerifierFactory__factory";
-export { Verifier__factory } from "./Verifier__factory";
 export { VerifierFactory__factory } from "./VerifierFactory__factory";
