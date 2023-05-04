@@ -23,13 +23,25 @@ const DIFFICULTY: number = 10;
 
   // save input data of circuit as .json file
   console.log('\nSaving input data as a JSON file...');
-  const valuesJson: number[] = Object.values(JSON.parse(values[0][0]));
-  fs.writeFileSync(
-    `${INPUT_FILE}-input.json`,
-    JSON.stringify({...circuitJson, ...{'in': tf.tensor3d(valuesJson, [28, 28, 1]).mul(10 ** 17).arraySync()}})
-  );
+  let count: number = 0;
+  values.map((value) => {
+    const valueJson: number[] = Object.values(JSON.parse(value[0]));
+    fs.writeFileSync(
+      `./circuit-inputs/${INPUT_FILE}-input-${count}.json`,
+      JSON.stringify({...circuitJson, ...{'in': tf.tensor3d(valueJson, [28, 28, 1]).mul(10 ** 17).arraySync()}})
+    );
+    count++;
+  });
 
   // generate Merkle proofs of the specified leaves
   console.log('\nGenerating Merkle proofs...\n');
   const { proof, proofFlags, leaves } = mtDriver.generateMerkleProofs(tree, indices);
+  fs.writeFileSync(
+    `./merkle-proofs/${INPUT_FILE}-merkle-proofs.json`,
+    JSON.stringify({
+      'proof': proof,
+      'proofFlags': proofFlags,
+      'leaves': leaves,
+    })
+  );
 })();
