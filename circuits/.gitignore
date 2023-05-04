@@ -4,3 +4,5 @@
 /*.gz
 /*.ptau
 /*.zkey
+/proof-*.json
+/public-*.json

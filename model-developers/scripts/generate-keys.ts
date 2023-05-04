@@ -3,7 +3,7 @@
 import 'zx/globals';
 
 const R1CS_FILENAME: string = argv.R1CS_FILENAME || "demo-circuit";
-const PTAU_FILENAME: string = argv.PTAU_FILENAME || "powersOfTau28_hez_final_21";
+const PTAU_FILENAME: string = argv.PTAU_FILENAME || "powersOfTau28_hez_final_17";
 const ZKEY_FILENAME: string = argv.ZKEY_FILENAME || "demo_0000";
 const ZKEY_FINAL_FILENAME: string = argv.ZKEY_FINAL_FILENAME || "demo_0001";
 

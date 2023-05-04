@@ -1,12 +1,11 @@
 pragma circom 2.0.0;
 
-include "../node_modules/circomlib-ml/circuits/GlobalAveragePooling2D.circom";
-include "../node_modules/circomlib-ml/circuits/AveragePooling2D.circom";
-include "../node_modules/circomlib-ml/circuits/Dense.circom";
 include "../node_modules/circomlib-ml/circuits/ArgMax.circom";
-include "../node_modules/circomlib-ml/circuits/BatchNormalization2D.circom";
+include "../node_modules/circomlib-ml/circuits/GlobalAveragePooling2D.circom";
+include "../node_modules/circomlib-ml/circuits/Dense.circom";
 include "../node_modules/circomlib-ml/circuits/Conv2D.circom";
-include "../node_modules/circomlib-ml/circuits/ReLU.circom";
+include "../node_modules/circomlib-ml/circuits/BatchNormalization2D.circom";
+include "../node_modules/circomlib-ml/circuits/AveragePooling2D.circom";
 
 template Model() {
 signal input in[28][28][1];
@@ -24,12 +23,6 @@ signal output out[1];
 
 component conv2d = Conv2D(28, 28, 1, 4, 3, 1);
 component batch_normalization = BatchNormalization2D(26, 26, 4);
-component re_lu[26][26][4];
-for (var i0 = 0; i0 < 26; i0++) {
-    for (var i1 = 0; i1 < 26; i1++) {
-        for (var i2 = 0; i2 < 4; i2++) {
-            re_lu[i0][i1][i2] = ReLU();
-}}}
 component average_pooling2d = AveragePooling2D(26, 26, 4, 2, 2, 2500000);
 component conv2d_1 = Conv2D(13, 13, 4, 16, 3, 1);
 component batch_normalization_1 = BatchNormalization2D(11, 11, 16);
@@ -66,12 +59,7 @@ for (var i0 = 0; i0 < 4; i0++) {
 for (var i0 = 0; i0 < 26; i0++) {
     for (var i1 = 0; i1 < 26; i1++) {
         for (var i2 = 0; i2 < 4; i2++) {
-            re_lu[i0][i1][i2].in <== batch_normalization.out[i0][i1][i2];
-}}}
-for (var i0 = 0; i0 < 26; i0++) {
-    for (var i1 = 0; i1 < 26; i1++) {
-        for (var i2 = 0; i2 < 4; i2++) {
-            average_pooling2d.in[i0][i1][i2] <== re_lu[i0][i1][i2].out;
+            average_pooling2d.in[i0][i1][i2] <== batch_normalization.out[i0][i1][i2];
 }}}
 for (var i0 = 0; i0 < 13; i0++) {
     for (var i1 = 0; i1 < 13; i1++) {
