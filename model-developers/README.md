@@ -35,7 +35,7 @@ Run the following command, where each argument refers to the following.
 | Argument Name | Description | Default |
 |--------------:|-------------|---------|
 | **R1CS_FILENAME** | name of `.r1cs` file | `demo-circuit` |
-| **PTAU_FILENAME** | name of `.ptau` file | `powersOfTau28_hez_final_23` |
+| **PTAU_FILENAME** | name of `.ptau` file | `powersOfTau28_hez_final_21` |
 | **ZKEY_FILENAME** | name of intermediate `.zkey` file | `demo_0000` |
 | **ZKEY_FINAL_FILENAME** | name of final `.zkey` file | `demo_0001` |
 
