@@ -13,7 +13,7 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "IVerifier.Hash",
+        internalType: "ICustomVerifier.Hash",
         name: "_modelContentId",
         type: "bytes32",
       },
@@ -36,7 +36,7 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "IVerifier.Hash",
+        internalType: "ICustomVerifier.Hash",
         name: "_modelContentId",
         type: "bytes32",
       },
@@ -83,7 +83,7 @@ const _abi = [
       {
         components: [
           {
-            internalType: "IVerifier.Hash",
+            internalType: "ICustomVerifier.Hash",
             name: "contentId",
             type: "bytes32",
           },
@@ -129,7 +129,7 @@ const _abi = [
       {
         components: [
           {
-            internalType: "IVerifier.Hash",
+            internalType: "ICustomVerifier.Hash",
             name: "contentId",
             type: "bytes32",
           },

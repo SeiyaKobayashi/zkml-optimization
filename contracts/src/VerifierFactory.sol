@@ -2,9 +2,9 @@
 pragma solidity 0.8.19;
 
 import "./CloneFactory.sol";
-import "./IVerifier.sol";
+import "./ICustomVerifier.sol";
 import "./IVerifierFactory.sol";
-import "./Verifier.sol";
+import "./CustomVerifier.sol";
 
 /**
  * @title Verifier factory contract
@@ -23,7 +23,7 @@ contract VerifierFactory is IVerifierFactory, CloneFactory {
     // mapping of owner address to array of models
     mapping(address => ModelArrayElement[]) private ownerAddressToModels;
     // mapping of content ID of model to model verifier address
-    mapping(IVerifier.Hash => address) private contentIdToVerifierAddress;
+    mapping(ICustomVerifier.Hash => address) private contentIdToVerifierAddress;
 
     /*
         events
@@ -32,7 +32,7 @@ contract VerifierFactory is IVerifierFactory, CloneFactory {
     // event to be emitted when a new child contract is deployed
     event ChildContractCreated(
         address indexed contractAddress,
-        IVerifier.Hash indexed modelContentId,
+        ICustomVerifier.Hash indexed modelContentId,
         address indexed modelOwnerAddress
     );
 
@@ -87,7 +87,7 @@ contract VerifierFactory is IVerifierFactory, CloneFactory {
     */
 
     function createChildContract(
-        IVerifier.Hash _modelContentId,
+        ICustomVerifier.Hash _modelContentId,
         string calldata _modelName,
         string calldata _modelDescription
     ) external validateModelParameters(_modelName, _modelDescription) {
@@ -98,7 +98,7 @@ contract VerifierFactory is IVerifierFactory, CloneFactory {
 
         address verifierContractAddress = createClone(verifierContract);
         contentIdToVerifierAddress[_modelContentId] = verifierContractAddress;
-        Verifier verifier = Verifier(verifierContractAddress);
+        CustomVerifier verifier = CustomVerifier(verifierContractAddress);
 
         verifier.registerModel(
             _modelContentId,
@@ -163,7 +163,7 @@ contract VerifierFactory is IVerifierFactory, CloneFactory {
     }
 
     function getClonedVerifierContract(
-        IVerifier.Hash _modelContentId
+        ICustomVerifier.Hash _modelContentId
     ) external view returns (address) {
         require(
             contentIdToVerifierAddress[_modelContentId] != address(0),

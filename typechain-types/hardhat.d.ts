@@ -17,6 +17,22 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Ownable__factory>;
     getContractFactory(
+      name: "Verifier",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.Verifier__factory>;
+    getContractFactory(
+      name: "CustomVerifier",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.CustomVerifier__factory>;
+    getContractFactory(
+      name: "ICircomVerifier",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ICircomVerifier__factory>;
+    getContractFactory(
+      name: "ICustomVerifier",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ICustomVerifier__factory>;
+    getContractFactory(
       name: "IVerifier",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IVerifier__factory>;
@@ -38,6 +54,26 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.Ownable>;
+    getContractAt(
+      name: "Verifier",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.Verifier>;
+    getContractAt(
+      name: "CustomVerifier",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.CustomVerifier>;
+    getContractAt(
+      name: "ICircomVerifier",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ICircomVerifier>;
+    getContractAt(
+      name: "ICustomVerifier",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ICustomVerifier>;
     getContractAt(
       name: "IVerifier",
       address: string,

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.19;
 
-import "./IVerifier.sol";
+import "./ICustomVerifier.sol";
 
 /**
  * @title Interface of Verifier factory contract
@@ -10,7 +10,7 @@ import "./IVerifier.sol";
 interface IVerifierFactory {
     /// @dev Holds simplified model details
     struct ModelArrayElement {
-        IVerifier.Hash contentId;
+        ICustomVerifier.Hash contentId;
         string name;
         address contractAddress;
     }
@@ -22,7 +22,7 @@ interface IVerifierFactory {
      * @param _modelDescription Description of model
      */
     function createChildContract(
-        IVerifier.Hash _modelContentId,
+        ICustomVerifier.Hash _modelContentId,
         string calldata _modelName,
         string calldata _modelDescription
     ) external;
@@ -62,6 +62,6 @@ interface IVerifierFactory {
      * @notice Get address of the cloned Verifier contract.
      */
     function getClonedVerifierContract(
-        IVerifier.Hash _modelContentId
+        ICustomVerifier.Hash _modelContentId
     ) external view returns (address);
 }

@@ -6,3 +6,5 @@
 /*.zkey
 /proof-*.json
 /public-*.json
+/proof.json
+/public.json

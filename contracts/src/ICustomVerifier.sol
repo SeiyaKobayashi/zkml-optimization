@@ -5,7 +5,7 @@ pragma solidity 0.8.19;
  * @title Interface of Verifier contract
  * @author Seiya Kobayashi
  */
-interface IVerifier {
+interface ICustomVerifier {
     /// @dev Type of keccak256 hash
     type Hash is bytes32;
 
@@ -29,13 +29,12 @@ interface IVerifier {
         bool isRevealed;
     }
 
-    // TODO: check exact types
     /// @dev Holds ZKP
     struct Zkp {
         uint256[2] a;
         uint256[2][2] b;
         uint256[2] c;
-        uint256[16] input;
+        uint256[1] input;
     }
 
     // TODO: check exact types
@@ -146,28 +145,18 @@ interface IVerifier {
     function updateDifficulty(uint8 _difficulty) external;
 
     /**
-     * @notice Verify Merkle proofs of leaves matched with the challenge.
+     * @notice Verify Merkle proofs of leaves matched with the challenge, and then verify ZKPs.
      * @param _commitmentId commitment ID
      * @param _merkleProofs Array of Merkle proofs
      * @param _proofFlags Array of proof flags
      * @param _leaves Array of Merkle leaves
+     * @param _zkps Array of client-generated ZKPs
      */
-    function reveal(
+    function verify(
         Hash _commitmentId,
         bytes32[] calldata _merkleProofs,
         bool[] calldata _proofFlags,
-        bytes32[] memory _leaves
+        bytes32[] memory _leaves,
+        Zkp[] memory _zkps
     ) external;
-
-    /**
-     * @notice Receives and verifies ZKPs.
-     * @dev Come up with a way to efficiently store verified ZKPs in smart contract (to be used by external contracts).
-     * @param commitmentId commitment ID
-     * @param zkps Array of client-generated ZKPs
-     * @return zkpVerifications Array of validity of ZKPs
-     */
-    function verify(
-        uint256 commitmentId,
-        Zkp[] memory zkps
-    ) external returns (ZkpWithValidity[] memory zkpVerifications);
 }
