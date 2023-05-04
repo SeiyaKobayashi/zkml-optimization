@@ -3,6 +3,7 @@
 import 'zx/globals';
 
 const EXECUTABLE_NAME: string = argv.EXECUTABLE_NAME || "demo-circuit";
+const ZKEY_FINAL_FILENAME: string = argv.ZKEY_FINAL_FILENAME || "demo_0001";
 
 (async () => {
   fs.readdir('./circuit-inputs/', async (_, filenames) => {
@@ -18,4 +19,7 @@ const EXECUTABLE_NAME: string = argv.EXECUTABLE_NAME || "demo-circuit";
       }
     }
   });
+
+  console.log(`\nGenerating a verifier contract...`);
+  await $`snarkjs zkey export solidityverifier ../circuits/${ZKEY_FINAL_FILENAME}.zkey ../contracts/circom/verifier.sol`;
 })();
