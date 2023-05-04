@@ -16,8 +16,6 @@ export type { ICircomVerifier } from "./contracts/src/ICircomVerifier";
 export { ICircomVerifier__factory } from "./factories/contracts/src/ICircomVerifier__factory";
 export type { ICustomVerifier } from "./contracts/src/ICustomVerifier";
 export { ICustomVerifier__factory } from "./factories/contracts/src/ICustomVerifier__factory";
-export type { IVerifier } from "./contracts/src/IVerifier";
-export { IVerifier__factory } from "./factories/contracts/src/IVerifier__factory";
 export type { IVerifierFactory } from "./contracts/src/IVerifierFactory";
 export { IVerifierFactory__factory } from "./factories/contracts/src/IVerifierFactory__factory";
 export type { VerifierFactory } from "./contracts/src/VerifierFactory";

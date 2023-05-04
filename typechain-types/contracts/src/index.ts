@@ -4,7 +4,5 @@
 export type { CustomVerifier } from "./CustomVerifier";
 export type { ICircomVerifier } from "./ICircomVerifier";
 export type { ICustomVerifier } from "./ICustomVerifier";
-export type { IVerifier } from "./IVerifier";
 export type { IVerifierFactory } from "./IVerifierFactory";
-export type { Verifier } from "./Verifier";
 export type { VerifierFactory } from "./VerifierFactory";
