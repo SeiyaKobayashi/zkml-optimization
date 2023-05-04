@@ -1,3 +1,4 @@
 t10k-*-ubyte
-demo-tree.json
-demo-input.json
+*-tree.json
+*-input-*.json
+*-merkle-proofs.json

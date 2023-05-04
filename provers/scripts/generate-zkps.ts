@@ -3,14 +3,19 @@
 import 'zx/globals';
 
 const EXECUTABLE_NAME: string = argv.EXECUTABLE_NAME || "demo-circuit";
-const INPUT_FILE: string = argv.INPUT_FILE || "demo";
 
 (async () => {
-  // generate witnesses
-  console.log('\nGenerating witnesses...');
-  await $`cd ../circuits/${EXECUTABLE_NAME}_js && node generate_witness.js ${EXECUTABLE_NAME}.wasm ../../provers/${INPUT_FILE}-input.json witness.wtns`;
+  fs.readdir('./circuit-inputs/', async (_, filenames) => {
+    for (let i = 0; i < filenames.length - 1; i++) {
+      if (filenames[i] !== '.gitkeep') {
+        // generate witnesses
+        console.log(`\nGenerating witness for ${filenames[i]}...`);
+        await $`cd ../circuits/${EXECUTABLE_NAME}_js && node generate_witness.js ${EXECUTABLE_NAME}.wasm ../../provers/circuit-inputs/${filenames[i]} witness-${i}.wtns`;
 
-  // generate ZKPs
-  console.log('\nGenerating ZKPs...');
-  await $`cd ../circuits && snarkjs groth16 prove demo_0001.zkey ./${EXECUTABLE_NAME}_js/witness.wtns proof.json public.json`;
+        // generate ZKP
+        console.log(`\nGenerating ZKPs for ${filenames[i]}...`);
+        await $`cd ../circuits && snarkjs groth16 prove demo_0001.zkey ./${EXECUTABLE_NAME}_js/witness-${i}.wtns proof-${i}.json public-${i}.json`;
+      }
+    }
+  });
 })();
