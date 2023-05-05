@@ -4,7 +4,7 @@ import hre from "hardhat";
 import { ContractFactory } from "ethers";
 import "@nomicfoundation/hardhat-toolbox";
 
-const difficulty = 12;
+const difficulty = 10;
 let Verifier: ContractFactory;
 let verifier: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 let CustomVerifier: ContractFactory;
@@ -25,11 +25,13 @@ async function main(): Promise<void> {
 
   console.log("Successfully deployed CustomVerifier contract.");
 
-  VerifierFactory = await hre.ethers.getContractFactory("VerifierFactory");
+  VerifierFactory = await hre.ethers.getContractFactory(
+    "CustomVerifierFactory"
+  );
   verifierFactory = await VerifierFactory.deploy(customVerifier.address);
   await verifierFactory.deployed();
 
-  console.log("Successfully deployed VerifierFactory contract.");
+  console.log("Successfully deployed CustomVerifierFactory contract.");
 }
 
 main().catch((err) => {

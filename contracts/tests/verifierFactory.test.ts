@@ -23,11 +23,13 @@ describe('Verifier Contract', () => {
     [owner] = await hre.ethers.getSigners();
     ownerAddress = await owner.getAddress();
 
-    Verifier = await hre.ethers.getContractFactory('Verifier');
+    Verifier = await hre.ethers.getContractFactory('CustomVerifier');
     verifier = await Verifier.deploy(difficulty);
     await verifier.deployed();
 
-    VerifierFactory = await hre.ethers.getContractFactory('VerifierFactory');
+    VerifierFactory = await hre.ethers.getContractFactory(
+      'CustomVerifierFactory',
+    );
     verifierFactory = await VerifierFactory.deploy(verifier.address);
     await verifierFactory.deployed();
   });

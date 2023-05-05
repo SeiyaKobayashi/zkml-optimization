@@ -3,8 +3,8 @@ pragma solidity 0.8.19;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-import "./ICircomVerifier.sol";
-import "./ICustomVerifier.sol";
+import "./interfaces/ICircomVerifier.sol";
+import "./interfaces/ICustomVerifier.sol";
 import "./libraries/Bytes.sol";
 import "./libraries/Challenge.sol";
 import "./libraries/MerkleTree.sol";
