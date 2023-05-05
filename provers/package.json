@@ -10,15 +10,22 @@
     "convert-keras-to-tf": "sh -c 'tensorflowjs_converter --input_format keras ../models/${0}.h5 ../models/${1}'",
     "encode-testing-results": "ts-node ./scripts/encode-testing-results.ts",
     "generate-merkle-proofs": "ts-node ./scripts/generate-merkle-proofs.ts",
-    "generate-zkps": "ts-node ./scripts/generate-zkps.ts"
+    "generate-zkps": "ts-node ./scripts/generate-zkps.ts",
+    "parameterize-zkps": "ts-node ./scripts/parameterize-zkps.ts"
   },
   "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "2.0.2",
+    "@nomiclabs/hardhat-ethers": "2.2.3",
     "@tensorflow/tfjs": "4.4.0",
     "@tensorflow/tfjs-node": "4.4.0",
+    "@typechain/ethers-v5": "10.2.0",
+    "@typechain/hardhat": "6.1.5",
     "@types/jest": "29.5.1",
     "@types/node": "18.16.1",
     "@types/react": "18.2.0",
     "@types/react-dom": "18.2.1",
+    "ethers": "6.3.0",
+    "hardhat": "2.14.0",
     "snarkjs": "0.6.10",
     "ts-node": "10.9.1",
     "typescript": "5.0.4",
