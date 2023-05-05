@@ -69,7 +69,7 @@ import { CONTRACT_ADDRESS_CUSTOM_VERIFIER } from './utils/constants';
   console.log('✅');
 
   console.log(
-    `Verification Result: ${
+    `\nVerification Result: ${
       proofsVerified
         ? 'ZKPs successfully verified!'
         : 'ZKPs failed to be verified...'

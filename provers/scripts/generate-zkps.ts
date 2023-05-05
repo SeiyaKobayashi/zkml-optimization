@@ -21,12 +21,8 @@ const ZKEY_FINAL: string = argv.ZKEY_FINAL || `${DEMO_PATH}_0001`;
         echo(`\nGenerating ZKPs for './witness-${i}.wtns' & saving it as './proof-${i}.json, ./public-${i}.json'...`);
         cd('..');
         await $`snarkjs groth16 prove ${ZKEY_FINAL}.zkey ./${CIRCUIT_EXECUTABLE}_js/witness-${i}.wtns ./proof-${i}.json ./public-${i}.json`;
-        echo('✅');
+        echo('✅\n');
       }
     }
   });
-
-  echo(`\nGenerating a verifier contract...`);
-  await $`snarkjs zkey export solidityverifier ../circuits/${ZKEY_FINAL}.zkey ../contracts/circom/verifier.sol`;
-  echo('✅\n');
 })();

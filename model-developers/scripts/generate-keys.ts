@@ -19,6 +19,10 @@ const ZKEY_FINAL: string = argv.ZKEY_FINAL || `${DEMO_PATH}_0001`;
 
   // contribute to the phase 2 of the ceremony
   await $`yarn snarkjs zkey contribute ${ZKEY}.zkey ${ZKEY_FINAL}.zkey --name="Contribution" -v`;
+  echo('✅');
 
+  // generate a verifier contract
+  echo(`\nGenerating a verifier contract...`);
+  await $`snarkjs zkey export solidityverifier ../circuits/${ZKEY_FINAL}.zkey ../contracts/circom/verifier.sol`;
   echo('✅\n');
 })();
