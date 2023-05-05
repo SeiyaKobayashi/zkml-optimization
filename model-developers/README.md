@@ -35,7 +35,7 @@ Run the following command, where each argument refers to the following.
 | Argument Name | Description | Default |
 |--------------:|-------------|---------|
 | **R1CS_FILENAME** | name of `.r1cs` file | `demo-circuit` |
-| **PTAU_FILENAME** | name of `.ptau` file | `powersOfTau28_hez_final_21` |
+| **PTAU_FILENAME** | name of `.ptau` file | `powersOfTau28_hez_final_17` |
 | **ZKEY_FILENAME** | name of intermediate `.zkey` file | `demo_0000` |
 | **ZKEY_FINAL_FILENAME** | name of final `.zkey` file | `demo_0001` |
 
@@ -63,4 +63,19 @@ $ yarn upload-to-ipfs --CIRCUIT_NAME=${aaa} --MODEL_NAME=${bbb} --ZKEY_NAME=${cc
 
 ## 4. Registering Model to Verifier Contract
 
-WIP
+```sh
+# cd into 'contracts' directory
+$ cd ../contracts
+
+# start hardhat blockchain in one window (first time only)
+$ yarn run-hardhat
+
+# open another window & deploy contracts (first time only)
+$ yarn deploy-contracts localhost
+
+# send proofs to the custom verifier
+$ yarn register-model localhost
+
+# confirm model registration
+$ yarn get-models localhost
+```
