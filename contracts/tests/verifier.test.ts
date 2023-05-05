@@ -15,6 +15,7 @@ describe('Verifier Contract', () => {
   const testMerkleRoot: string = new Bytes32(
     '0x1111111111111111111111111111111111111111111111111111111111111111',
   ).toString();
+  const testCircomVerifierAddress = '0xe7f1725e7734ce288f8367e1bb143e90bb3f0510';
 
   let Verifier: ContractFactory;
   let verifier: Contract;
@@ -29,7 +30,7 @@ describe('Verifier Contract', () => {
     ownerAddress = await owner.getAddress();
 
     Verifier = await hre.ethers.getContractFactory('CustomVerifier');
-    verifier = await Verifier.deploy(difficulty);
+    verifier = await Verifier.deploy(testCircomVerifierAddress, difficulty);
     await verifier.deployed();
 
     VerifierFactory = await hre.ethers.getContractFactory(
@@ -51,14 +52,14 @@ describe('Verifier Contract', () => {
 
   describe('constructor', () => {
     it('success', async () => {
-      await Verifier.deploy(difficulty);
+      await Verifier.deploy(testCircomVerifierAddress, difficulty);
 
       const _difficulty = await verifier.getDifficulty();
       expect(_difficulty).to.equal(difficulty);
     });
 
     it('failure: invalid difficulty', async () => {
-      await expect(Verifier.deploy(0)).to.be.revertedWith(
+      await expect(Verifier.deploy(testCircomVerifierAddress, 0)).to.be.revertedWith(
         'difficulty cannot be 0',
       );
     });
