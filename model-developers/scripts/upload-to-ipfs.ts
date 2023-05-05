@@ -2,12 +2,16 @@
 
 import 'zx/globals';
 
-const CIRCUIT: string = argv.CIRCUIT || "demo-circuit";
-const MODEL: string = argv.MODEL || "demo";
-const ZKEY_FINAL: string = argv.ZKEY_FINAL || "demo_0001";
+import { DEMO_PATH } from './utils/constants';
+
+const CIRCUIT: string = argv.CIRCUIT || `${DEMO_PATH}-circuit`;
+const MODEL: string = argv.MODEL || DEMO_PATH;
+const ZKEY_FINAL: string = argv.ZKEY_FINAL || `${DEMO_PATH}_0001`;
 
 (async (): Promise<void> => {
   echo('\nUploading files to IPFS...');
+
+  cd('../circuits');
 
   // bundle files
   await $`tar cf ${CIRCUIT}_cpp.tar.gz ${CIRCUIT}_cpp`;

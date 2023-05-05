@@ -3,14 +3,14 @@
 import 'zx/globals';
 import * as tf from '@tensorflow/tfjs-node';
 
-import dataDriver from "../utils/load-mnist-data";
-import merkleTreeDriver from "../utils/merkle-tree";
-import { DIFFICULTY } from "../utils/constants";
+import dataDriver from "./utils/load-mnist-data";
+import merkleTreeDriver from "./utils/merkle-tree";
+import { DEMO_PATH, DIFFICULTY } from "./utils/constants";
 
-const MODEL: string = argv.MODEL || "demo-tfjs";
-const MERKLE_TREE: string = argv.MERKLE_TREE || "demo-tree";
+const MODEL: string = argv.MODEL || `${DEMO_PATH}-tfjs`;
+const MERKLE_TREE: string = argv.MERKLE_TREE || `${DEMO_PATH}-tree`;
 
-(async () => {
+(async (): Promise<void> => {
   // load model
   echo('\nLoading model...');
   const model = await tf.loadLayersModel(`file://../models/${MODEL}/model.json`);
@@ -31,6 +31,7 @@ const MERKLE_TREE: string = argv.MERKLE_TREE || "demo-tree";
   echo(`\nEncoding testing results & saving it as './merkle-trees/${MERKLE_TREE}.json'...`);
   const mtDriver = new merkleTreeDriver(DIFFICULTY);
   const merkleRoot = mtDriver.generateMerkleTree(testImages, predictions, `./merkle-trees/${MERKLE_TREE}.json`);
+  echo(`\nmerkleRoot: ${merkleRoot}`);
   echo('✅');
 
   // save Merkle root as a JSON file

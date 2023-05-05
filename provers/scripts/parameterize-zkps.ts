@@ -2,7 +2,7 @@
 
 import 'zx/globals';
 
-(async () => {
+(async (): Promise<void> => {
   let paramsAll: any[] = [];
 
   // generate parameters for the auto-generated verifier contract

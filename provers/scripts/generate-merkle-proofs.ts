@@ -3,15 +3,14 @@
 import 'zx/globals';
 import * as tf from '@tensorflow/tfjs-node';
 
-import merkleTreeDriver from "../utils/merkle-tree";
-import { DIFFICULTY, MNIST_SHAPE, MNIST_DENORMALIZATION_CONSTANT } from "../utils/constants";
+import merkleTreeDriver from "./utils/merkle-tree";
+import { DEMO_PATH, DIFFICULTY, MNIST_SHAPE, MNIST_DENORMALIZATION_CONSTANT } from "./utils/constants";
 import circuitJson from '../../circuits/demo-circuit.json' assert { type: "json" }
 
-const MERKLE_TREE: string = argv.MERKLE_TREE || "demo-tree";
-const CIRCUIT_INPUT: string = argv.CIRCUIT_INPUT || "demo";
-const CHALLENGE: string = argv.CHALLENGE || "0x00000000000000000000000000000000000000000000000000000000000002cd";
+const MERKLE_TREE: string = argv.MERKLE_TREE || `${DEMO_PATH}-tree`;
+const CIRCUIT_INPUT: string = argv.CIRCUIT_INPUT || DEMO_PATH;
 
-(async () => {
+(async (): Promise<void> => {
   const mtDriver = new merkleTreeDriver(DIFFICULTY);
 
   // load Merkle tree from a file
@@ -21,7 +20,10 @@ const CHALLENGE: string = argv.CHALLENGE || "0x000000000000000000000000000000000
 
   // search Merkle tree given the random challenge of difficulty
   echo('\nSearching Merkle tree...');
-  const {values, indices} = mtDriver.searchMerkleTree(tree, CHALLENGE, DIFFICULTY);
+  const challenge = JSON.parse(
+    fs.readFileSync('../contracts/outputs/commitment.json').toString(),
+  ).challenge;
+  const {values, indices} = mtDriver.searchMerkleTree(tree, challenge, DIFFICULTY);
   echo('✅');
 
   // save input (private) data of circuit as a JSON file
@@ -38,11 +40,11 @@ const CHALLENGE: string = argv.CHALLENGE || "0x000000000000000000000000000000000
   echo('✅');
 
   // generate Merkle proofs of the specified leaves
-  echo(`\nGenerating Merkle proofs & saving them to './merkle-trees/${CIRCUIT_INPUT}-merkle-proofs.json'...\n`);
+  echo(`\nGenerating Merkle proofs & saving them to './merkle-trees/${DEMO_PATH}-merkle-proofs.json'...\n`);
   const { proof, proofFlags, leaves } = mtDriver.generateMerkleProofs(tree, indices);
   const leafHashes = leaves.map((leaf) => tree.leafHash(leaf));
   fs.writeFileSync(
-    `./merkle-trees/${CIRCUIT_INPUT}-merkle-proofs.json`,
+    `./merkle-trees/${DEMO_PATH}-merkle-proofs.json`,
     JSON.stringify({
       'proof': proof,
       'proofFlags': proofFlags,

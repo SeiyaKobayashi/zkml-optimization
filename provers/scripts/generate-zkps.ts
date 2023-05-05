@@ -2,10 +2,12 @@
 
 import 'zx/globals';
 
-const CIRCUIT_EXECUTABLE: string = argv.CIRCUIT_EXECUTABLE || "demo-circuit";
-const ZKEY_FINAL: string = argv.ZKEY_FINAL || "demo_0001";
+import { DEMO_PATH } from "./utils/constants";
 
-(async () => {
+const CIRCUIT_EXECUTABLE: string = argv.CIRCUIT_EXECUTABLE || `${DEMO_PATH}-circuit`;
+const ZKEY_FINAL: string = argv.ZKEY_FINAL || `${DEMO_PATH}_0001`;
+
+(async (): Promise<void> => {
   fs.readdir('./circuit-inputs/', async (_, filenames) => {
     for (let i = 0; i < filenames.length - 1; i++) {
       if (filenames[i] !== '.gitkeep') {

@@ -3,15 +3,14 @@
 import hre from 'hardhat';
 import '@nomicfoundation/hardhat-toolbox';
 
-const CONTRACT_ADDRESS: string =
-  process.env.CONTRACT_ADDRESS || '0xe7f1725e7734ce288f8367e1bb143e90bb3f0512';
+import { CONTRACT_ADDRESS_CUSTOM_VERIFIER } from './utils/constants';
 
 (async (): Promise<void> => {
   // initialize CustomVerifier contract
   console.log('\nInitializing CustomVerifier contract...');
   const customVerifier = await hre.ethers.getContractAt(
     'CustomVerifier',
-    CONTRACT_ADDRESS,
+    CONTRACT_ADDRESS_CUSTOM_VERIFIER,
   );
   console.log('✅');
 

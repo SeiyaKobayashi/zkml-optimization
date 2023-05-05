@@ -23,7 +23,6 @@
     "get-models": "sh -c 'hardhat run --network ${0} scripts/get-models.ts'",
     "commit-merkle-root": "sh -c 'hardhat run --network ${0} scripts/commit-merkle-root.ts'",
     "get-commitments": "sh -c 'hardhat run --network ${0} scripts/get-commitments.ts'",
-    "get-commitment": "sh -c 'hardhat run --network ${0} scripts/get-commitment.ts'",
     "send-proofs": "sh -c 'hardhat run --network ${0} scripts/send-proofs.ts'"
   },
   "dependencies": {

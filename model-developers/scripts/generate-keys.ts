@@ -2,13 +2,17 @@
 
 import 'zx/globals';
 
-const R1CS: string = argv.R1CS || "demo-circuit";
+import { DEMO_PATH } from './utils/constants';
+
+const R1CS: string = argv.R1CS || `${DEMO_PATH}-circuit`;
 const PTAU: string = argv.PTAU || "powersOfTau28_hez_final_17";
-const ZKEY: string = argv.ZKEY || "demo_0000";
-const ZKEY_FINAL: string = argv.ZKEY_FINAL || "demo_0001";
+const ZKEY: string = argv.ZKEY || `${DEMO_PATH}_0000`;
+const ZKEY_FINAL: string = argv.ZKEY_FINAL || `${DEMO_PATH}_0001`;
 
 (async (): Promise<void> => {
   echo('\nGenerating z-keys...');
+
+  cd('../circuits');
 
   // generate proving & verification keys
   await $`yarn snarkjs groth16 setup ${R1CS}.r1cs ${PTAU}.ptau ${ZKEY}.zkey`;

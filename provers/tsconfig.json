@@ -8,8 +8,7 @@
         "esModuleInterop": true,
     },
     "include": [
-        "./scripts/*.ts",
-        "./utils/*.ts",
+        "./scripts/**/*.ts",
     ],
     "ts-node": {
         "esm": true,

@@ -4,8 +4,14 @@
         "target": "ESNext",
         "module": "ESNext",
         "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
     },
     "include": [
-        "./scripts",
-    ]
+        "./scripts/**/*.ts",
+    ],
+    "ts-node": {
+        "esm": true,
+        "experimentalSpecifierResolution": "node",
+    }
 }

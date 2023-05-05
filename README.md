@@ -48,7 +48,7 @@ Go to `./model-developers` directory, and follow the instructions in `README.md`
 
 ### 2. Steps for Prover Clients
 
-WIP
+Go to `./provers` directory, and follow the instructions in `README.md` for encoding testing results as a Merkle tree, generating Merkle proofs and ZKPs given the random challenge, and sending proofs to our custom verifier contract for revealing/verification.
 
 ## Contributions
 

@@ -7,12 +7,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "setup-circom": "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh && ts-node --esm ./scripts/setup-circom.ts",
-    "setup-ipfs": "ts-node --esm ./scripts/setup-ipfs.ts",
-    "compile-circuit": "cd ../circuits && ts-node --esm ../model-developers/scripts/compile-circuit.ts",
-    "generate-keys": "cd ../circuits && ts-node --esm ../model-developers/scripts/generate-keys.ts",
-    "connect-to-ipfs": "cd ../circuits && ts-node --esm ../model-developers/scripts/connect-to-ipfs.ts",
-    "upload-to-ipfs": "cd ../circuits && ts-node --esm ../model-developers/scripts/upload-to-ipfs.ts"
+    "setup-circom": "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh && ts-node ./scripts/setup-circom.ts",
+    "setup-ipfs": "ts-node ./scripts/setup-ipfs.ts",
+    "compile-circuit": "ts-node ./scripts/compile-circuit.ts",
+    "generate-keys": "ts-node ./scripts/generate-keys.ts",
+    "connect-to-ipfs": "ts-node ./scripts/connect-to-ipfs.ts",
+    "upload-to-ipfs": "ts-node ./scripts/upload-to-ipfs.ts"
   },
   "devDependencies": {
     "snarkjs": "0.6.10",
