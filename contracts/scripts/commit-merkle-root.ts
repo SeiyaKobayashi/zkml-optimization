@@ -29,17 +29,15 @@ const MERKLE_TREE: string = process.env.MERKLE_TREE || `${DEMO_PATH}-tree`;
   console.log('✅');
 
   // save commitment details as a JSON file
-  console.log('\nSaving commitment details as \'./outputs/commitment.json\'...');
+  console.log("\nSaving commitment details as './outputs/commitment.json'...");
   const commitments = await customVerifier.getCommitmentsOfModel(0, 10);
   const commitment = await customVerifier.getCommitment(commitments[0]);
   fs.writeFileSync(
     `./outputs/commitment.json`,
-    JSON.stringify(
-      {
-        commitmentId: commitment.id,
-        challenge: commitment.challenge,
-      }
-    ),
+    JSON.stringify({
+      commitmentId: commitment.id,
+      challenge: commitment.challenge,
+    }),
   );
   console.log('✅\n');
 })();

@@ -20,6 +20,8 @@ const COMMITMENT_ID: string =
 
   // fetch commitment of the specified ID from CustomVerifier contract
   console.log('\nFetching commitment of the specified ID...');
-  const commitment = await customVerifier.getCommitment(process.env.COMMITMENT_ID);
+  const commitment = await customVerifier.getCommitment(
+    process.env.COMMITMENT_ID,
+  );
   console.log(`Commitment: ${commitment}\n`);
 })();
