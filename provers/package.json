@@ -29,6 +29,7 @@
     "snarkjs": "0.6.10",
     "ts-node": "10.9.1",
     "typescript": "5.0.4",
+    "yarn-run-all": "3.1.1",
     "zx": "7.2.1"
   }
 }

@@ -13,11 +13,8 @@ const ZKEY_FINAL: string = argv.ZKEY_FINAL || `${DEMO_PATH}_0001`;
 
   cd('../circuits');
 
-  // bundle files
-  await $`tar cf ${CIRCUIT}_cpp.tar.gz ${CIRCUIT}_cpp`;
-
   // copy files into a directory
-  await $`mkdir ${CIRCUIT} && cp ../models/${MODEL}.h5 ${CIRCUIT}_cpp.tar.gz ${ZKEY_FINAL}.zkey ${CIRCUIT}`;
+  await $`mkdir ${CIRCUIT} && cp ../models/${MODEL}.h5 ${CIRCUIT}.circom ${ZKEY_FINAL}.zkey ${CIRCUIT}`;
 
   // add bundled files to ipfs
   await $`ipfs add -r ${CIRCUIT}`;

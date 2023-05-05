@@ -69,7 +69,7 @@ Run the following commands to generate Merkle proofs of leaf nodes matched with 
 | **CIRCUIT_INPUT** | name of directory containing circuit inputs | `demo` |
 
 ```sh
-$ yarn generate-merkle-proofs
+$ yarn generate-merkle-proofs --MERKLE_TREE=${aaa} --CIRCUIT_INPUT=${bbb}
 ```
 
 ## 4. Generating ZKPs
@@ -83,7 +83,7 @@ Run the following commands to generate ZKPs as well as actual inputs to be verif
 
 ```sh
 # generate ZKPs
-$ yarn generate-zkps
+$ yarn generate-zkps --CIRCUIT_EXECUTABLE=${aaa} --ZKEY_FINAL=${bbb}
 
 # generate parameters for verifier contract
 $ yarn parameterize-zkps
@@ -91,7 +91,7 @@ $ yarn parameterize-zkps
 
 ## 5. Send Merkle Proofs & ZKPs to Verifier for Verifications
 
-Run the following commands to send Merkle proofs and ZKPs to our custom verifier contract for verification.
+Run the following commands to send Merkle proofs and ZKPs to our custom verifier contract for verification. **Note that you need to modify solidity version of the auto-generated verifier to `0.8.19` before running those commands.** 
 
 ```sh
 # cd into 'contracts' directory
