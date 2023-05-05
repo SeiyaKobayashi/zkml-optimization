@@ -3,8 +3,8 @@
 import hre from "hardhat";
 import "@nomicfoundation/hardhat-toolbox";
 
-const CONTRACT_ADDRESS: string =
-  process.env.CONTRACT_ADDRESS || "0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0";
+import { CONTRACT_ADDRESS_CUSTOM_VERIFIER_FACTORY } from './utils/constants';
+
 const MODEL_CONTENT_ID: string =
   process.env.MODEL_CONTENT_ID ||
   "0x1111111111111111111111111111111111111111111111111111111111111111";
@@ -17,7 +17,7 @@ const MODEL_DESCRIPTION: string =
   console.log("\nInitializing CustomVerifierFactory contract...");
   const customVerifierFactory = await hre.ethers.getContractAt(
     "CustomVerifierFactory",
-    CONTRACT_ADDRESS
+    CONTRACT_ADDRESS_CUSTOM_VERIFIER_FACTORY
   );
   console.log("✅");
 

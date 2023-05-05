@@ -2,17 +2,19 @@
 
 import 'zx/globals';
 
-const R1CS_FILENAME: string = argv.R1CS_FILENAME || "demo-circuit";
-const PTAU_FILENAME: string = argv.PTAU_FILENAME || "powersOfTau28_hez_final_17";
-const ZKEY_FILENAME: string = argv.ZKEY_FILENAME || "demo_0000";
-const ZKEY_FINAL_FILENAME: string = argv.ZKEY_FINAL_FILENAME || "demo_0001";
+const R1CS: string = argv.R1CS || "demo-circuit";
+const PTAU: string = argv.PTAU || "powersOfTau28_hez_final_17";
+const ZKEY: string = argv.ZKEY || "demo_0000";
+const ZKEY_FINAL: string = argv.ZKEY_FINAL || "demo_0001";
 
-(async () => {
-  console.log('\nGenerating keys...\n');
+(async (): Promise<void> => {
+  echo('\nGenerating z-keys...');
 
   // generate proving & verification keys
-  await $`yarn snarkjs groth16 setup ${R1CS_FILENAME}.r1cs ${PTAU_FILENAME}.ptau ${ZKEY_FILENAME}.zkey`;
+  await $`yarn snarkjs groth16 setup ${R1CS}.r1cs ${PTAU}.ptau ${ZKEY}.zkey`;
 
   // contribute to the phase 2 of the ceremony
-  await $`yarn snarkjs zkey contribute ${ZKEY_FILENAME}.zkey ${ZKEY_FINAL_FILENAME}.zkey --name="1st Contribution" -v`;
+  await $`yarn snarkjs zkey contribute ${ZKEY}.zkey ${ZKEY_FINAL}.zkey --name="Contribution" -v`;
+
+  echo('✅\n');
 })();

@@ -2,11 +2,13 @@
 
 import 'zx/globals';
 
-const CIRCUIT_NAME: string = argv.CIRCUIT_NAME || "demo-circuit";
+const CIRCUIT: string = argv.CIRCUIT || "demo-circuit";
 
-(async () => {
-  console.log('\nCompiling circuit...\n');
+(async (): Promise<void> => {
+  echo('\nCompiling circuit...');
 
   // compile circuit using circom
-  await $`circom ../circuits/${CIRCUIT_NAME}.circom --r1cs --sym --wasm`;
+  await $`circom ../circuits/${CIRCUIT}.circom --r1cs --sym --wasm`;
+
+  echo('✅\n');
 })();

@@ -8,12 +8,10 @@ Setup procedures for using this program as model developers.
 
 ## 0. Installation
 
-- Read and follow instructions of `circuits` directory first (i.e. **Need to clone `.ptau` file into `circuits` directory**).
-- Run the following commands **for the first time only**, where `xxx` refers to the name of binary of your local environment. See the list of binaries available from [here](https://dist.ipfs.tech/#go-ipfs) (the first command fetches masOS binary by default, if `IPFS_BINARY` is not specified).
-- We are using [IPFS](https://ipfs.tech/) for storing and sharing static assets distributively.  
+Run the following commands **FOR THE FIRST TIME ONLY**, where `xxx` refers to the name of binary of your local environment. See the list of binaries available from [here](https://dist.ipfs.tech/#go-ipfs) (`setup-ipfs` command fetches masOS binary by default, if `IPFS_BINARY` is not specified).  
 
 ```sh
-# setup circom (no need to execute this command twice unless you manually deleted 'circom' directory)
+# setup circom (no need to execute this command more than once unless you manually deleted 'circom' directory)
 $ yarn setup-circom
 
 # setup go-ipfs (no need to execute this command if IPFS repo already exists in your environment)
@@ -22,36 +20,36 @@ $ yarn setup-ipfs --IPFS_BINARY=${xxx}
 
 ## 1. Compiling Circuit
 
-Run the following command, where `xxx` refers to file name of the circuit you would like to compile (this command compiles `demo-circuit.circom` by default, if `CIRCUIT_NAME` is not specified).
+Run the following command to compile circuit, where `xxx` refers to file name of the circuit you would like to compile (`compile-circuit` command compiles `./circuits/demo-circuit.circom` by default, if `CIRCUIT` is not specified).
 
 ```sh
-$ yarn compile-circuit --CIRCUIT_NAME=${xxx}
+$ yarn compile-circuit --CIRCUIT=${xxx}
 ```
 
-## 2. Generating Keys
+## 2. Generating Z-Keys
 
-Run the following command, where each argument refers to the following.
+We need a proving key for generating ZKPs, and a verification key for verifying ZKPs. Run the following command to generate those z-keys, where each argument refers to the following.
 
 | Argument Name | Description | Default |
 |--------------:|-------------|---------|
-| **R1CS_FILENAME** | name of `.r1cs` file | `demo-circuit` |
-| **PTAU_FILENAME** | name of `.ptau` file | `powersOfTau28_hez_final_17` |
-| **ZKEY_FILENAME** | name of intermediate `.zkey` file | `demo_0000` |
-| **ZKEY_FINAL_FILENAME** | name of final `.zkey` file | `demo_0001` |
+| **R1CS** | name of `.r1cs` file | `demo-circuit` |
+| **PTAU** | name of `.ptau` file | `powersOfTau28_hez_final_17` |
+| **ZKEY** | name of intermediate `.zkey` file | `demo_0000` |
+| **ZKEY_FINAL** | name of final `.zkey` file | `demo_0001` |
 
 ```sh
-$ yarn generate-keys --R1CS_FILENAME=${aaa} --PTAU_FILENAME=${bbb} --ZKEY_FILENAME=${ccc} --ZKEY_FINAL_FILENAME=${ddd}
+$ yarn generate-keys --R1CS=${aaa} --PTAU=${bbb} --ZKEY=${ccc} --ZKEY_FINAL=${ddd}
 ```
 
-## 3. Uploading Files to IPFS
+## 3. Uploading Files to `IPFS`
 
-Run the following commands, where each argument refers to the following.
+We are using [IPFS](https://ipfs.tech/) for storing and sharing static assets in a distributive manner. Run the following commands to connect and upload files to IPFS, where each argument refers to the following.
 
 | Argument Name | Description | Default |
 |--------------:|-------------|---------|
-| **CIRCUIT_NAME** | name of `.circom` file | `demo-circuit` |
-| **MODEL_NAME** | name of `.h5` file | `demo` |
-| **ZKEY_NAME** | name of final `.zkey` file | `demo_0001` |
+| **CIRCUIT** | name of `.circom` file | `demo-circuit` |
+| **MODEL** | name of `.h5` file | `demo` |
+| **ZKEY_FINAL** | name of final `.zkey` file | `demo_0001` |
 
 ```sh
 # connect to ipfs p2p network
@@ -61,19 +59,21 @@ $ yarn connect-to-ipfs
 $ yarn upload-to-ipfs --CIRCUIT_NAME=${aaa} --MODEL_NAME=${bbb} --ZKEY_NAME=${ccc}
 ```
 
-## 4. Registering Model to Verifier Contract
+## 4. Registering Model to `CustomVerifier` Contract
+
+Model developers interact with prover clients via our `CustomVerifier` contract. Run the following commands to register hash of the files uploaded to IPFS.
 
 ```sh
 # cd into 'contracts' directory
 $ cd ../contracts
 
-# start hardhat blockchain in one window (first time only)
+# start hardhat blockchain in one window (FIRST TIME ONLY)
 $ yarn run-hardhat
 
-# open another window & deploy contracts (first time only)
+# open another window & deploy contracts (FIRST TIME ONLY)
 $ yarn deploy-contracts localhost
 
-# send proofs to the custom verifier
+# register model to the contract
 $ yarn register-model localhost
 
 # confirm model registration
