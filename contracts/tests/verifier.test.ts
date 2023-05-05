@@ -15,7 +15,8 @@ describe('Verifier Contract', () => {
   const testMerkleRoot: string = new Bytes32(
     '0x1111111111111111111111111111111111111111111111111111111111111111',
   ).toString();
-  const testCircomVerifierAddress = '0xe7f1725e7734ce288f8367e1bb143e90bb3f0510';
+  const testCircomVerifierAddress =
+    '0xe7f1725e7734ce288f8367e1bb143e90bb3f0510';
 
   let Verifier: ContractFactory;
   let verifier: Contract;
@@ -59,9 +60,9 @@ describe('Verifier Contract', () => {
     });
 
     it('failure: invalid difficulty', async () => {
-      await expect(Verifier.deploy(testCircomVerifierAddress, 0)).to.be.revertedWith(
-        'difficulty cannot be 0',
-      );
+      await expect(
+        Verifier.deploy(testCircomVerifierAddress, 0),
+      ).to.be.revertedWith('difficulty cannot be 0');
     });
   });
 
