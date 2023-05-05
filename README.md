@@ -40,11 +40,11 @@ We have a demo ML model called `demo.h5` in `./models` directory. This is a clas
 
 We are using [keras2circom](https://github.com/socathie/keras2circom) as a way to convert model files (`.h5`) into circom-compatible circuits. Follow the steps in keras2circom's [README](https://github.com/socathie/keras2circom#keras2circom) to convert models into circuits. The demo circuit files auto-generated from the demo model are `demo-circuit.circom` and `demo-circuit-json` in `./circuits/` directory.
 
-We need a patu file for our trusted-setup. Clone `powersOfTau28_hez_final_17.ptau` from [this repo](https://github.com/iden3/snarkjs#7-prepare-phase-2), and place it in `./circuits` directory.
+We need a ptau file for our trusted-setup. Clone `powersOfTau28_hez_final_17.ptau` from [this repo](https://github.com/iden3/snarkjs#7-prepare-phase-2), and place it in `./circuits` directory.
 
-#### 1-B. Circuit Compilation, Z-Key Generation, IPFS, Model Registration
+#### 1-B. Circuit Compilation, ZKey Generation, IPFS, Model Registration
 
-Go to `./model-developers` directory, and follow the instructions in `README.md` for compiling demo circuit, generating z-keys from them, uploading files to IPFS, and registering the resulting hash to our custom verifier contract.
+Go to `./model-developers` directory, and follow the instructions in `README.md` for compiling demo circuit, generating zkeys from them, uploading files to IPFS, and registering the resulting hash to our custom verifier contract.
 
 ### 2. Steps for Prover Clients
 

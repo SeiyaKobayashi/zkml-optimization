@@ -26,9 +26,9 @@ Run the following command to compile circuit, where `xxx` refers to file name of
 $ yarn compile-circuit --CIRCUIT=${xxx}
 ```
 
-## 2. Generating Z-Keys
+## 2. Generating ZKeys
 
-We need a proving key for generating ZKPs, and a verification key for verifying ZKPs. Run the following command to generate those z-keys, where each argument refers to the following.
+We need a proving key for generating ZKPs, and a verification key for verifying ZKPs. Run the following command to generate those zkeys, where each argument refers to the following.
 
 | Argument Name | Description | Default |
 |--------------:|-------------|---------|

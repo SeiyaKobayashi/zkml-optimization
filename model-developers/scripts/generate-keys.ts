@@ -10,7 +10,7 @@ const ZKEY: string = argv.ZKEY || `${DEMO_PATH}_0000`;
 const ZKEY_FINAL: string = argv.ZKEY_FINAL || `${DEMO_PATH}_0001`;
 
 (async (): Promise<void> => {
-  echo('\nGenerating z-keys...');
+  echo('\nGenerating zkeys...');
 
   cd('../circuits');
 

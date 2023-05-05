@@ -19,7 +19,7 @@ const MERKLE_TREE: string = process.env.MERKLE_TREE || `${DEMO_PATH}-tree`;
 
   // commit Merkle root
   console.log('\nCommitting Merkle root...');
-  const _ = await customVerifier.commit(
+  await customVerifier.commit(
     JSON.parse(
       fs
         .readFileSync(`../provers/merkle-trees/${MERKLE_TREE}-root.json`)
