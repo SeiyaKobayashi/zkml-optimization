@@ -2,19 +2,22 @@
 
 import 'zx/globals';
 
-const CIRCUIT_NAME: string = argv.CIRCUIT_NAME || "demo-circuit";
-const MODEL_NAME: string = argv.MODEL_NAME || "demo";
-const ZKEY_NAME: string = argv.ZKEY_NAME || "demo_0001";
+import { DEMO_PATH } from './utils/constants';
 
-(async () => {
-  console.log('\nUploading files to IPFS...\n');
+const CIRCUIT: string = argv.CIRCUIT || `${DEMO_PATH}-circuit`;
+const MODEL: string = argv.MODEL || DEMO_PATH;
+const ZKEY_FINAL: string = argv.ZKEY_FINAL || `${DEMO_PATH}_0001`;
 
-  // bundle files
-  await $`tar cf ${CIRCUIT_NAME}_cpp.tar.gz ${CIRCUIT_NAME}_cpp`;
+(async (): Promise<void> => {
+  echo('\nUploading files to IPFS...');
+
+  cd('../circuits');
 
   // copy files into a directory
-  await $`mkdir ${CIRCUIT_NAME} && cp ../models/${MODEL_NAME}.h5 ${CIRCUIT_NAME}_cpp.tar.gz ${ZKEY_NAME}.zkey ${CIRCUIT_NAME}`;
+  await $`mkdir ${CIRCUIT} && cp ../models/${MODEL}.h5 ${CIRCUIT}.circom ${ZKEY_FINAL}.zkey ${CIRCUIT}`;
 
   // add bundled files to ipfs
-  await $`ipfs add -r ${CIRCUIT_NAME}`;
+  await $`ipfs add -r ${CIRCUIT}`;
+
+  echo('✅\n');
 })();

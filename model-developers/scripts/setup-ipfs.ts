@@ -3,16 +3,18 @@
 import 'zx/globals';
 
 const IPFS_BINARY: string = argv.IPFS_BINARY || "darwin-arm64";
-const IPFS_LINK: string = `https://dist.ipfs.tech/kubo/v0.19.1/kubo_v0.19.1_${IPFS_BINARY}.tar.gz`;
 
-(async () => {
-  console.log('\nSetting up go-ipfs...\n');
+(async (): Promise<void> => {
+  echo('\nSetting up go-ipfs...');
 
   // install go-ipfs
-  await $`wget ${IPFS_LINK}`;
+  await $`wget https://dist.ipfs.tech/kubo/v0.19.1/kubo_v0.19.1_${IPFS_BINARY}.tar.gz`;
   await $`tar xvzf kubo_v0.19.1_${IPFS_BINARY}.tar.gz`;
-  await $`cd kubo && sudo ./install.sh`;
+  cd('kubo');
+  await $`sudo ./install.sh`;
 
   // initialize ipfs repo
   await $`ipfs init`;
+
+  echo('✅\n');
 })();

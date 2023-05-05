@@ -2,17 +2,27 @@
 
 import 'zx/globals';
 
-const R1CS_FILENAME: string = argv.R1CS_FILENAME || "demo-circuit";
-const PTAU_FILENAME: string = argv.PTAU_FILENAME || "powersOfTau28_hez_final_17";
-const ZKEY_FILENAME: string = argv.ZKEY_FILENAME || "demo_0000";
-const ZKEY_FINAL_FILENAME: string = argv.ZKEY_FINAL_FILENAME || "demo_0001";
+import { DEMO_PATH } from './utils/constants';
 
-(async () => {
-  console.log('\nGenerating keys...\n');
+const R1CS: string = argv.R1CS || `${DEMO_PATH}-circuit`;
+const PTAU: string = argv.PTAU || "powersOfTau28_hez_final_17";
+const ZKEY: string = argv.ZKEY || `${DEMO_PATH}_0000`;
+const ZKEY_FINAL: string = argv.ZKEY_FINAL || `${DEMO_PATH}_0001`;
+
+(async (): Promise<void> => {
+  echo('\nGenerating zkeys...');
+
+  cd('../circuits');
 
   // generate proving & verification keys
-  await $`yarn snarkjs groth16 setup ${R1CS_FILENAME}.r1cs ${PTAU_FILENAME}.ptau ${ZKEY_FILENAME}.zkey`;
+  await $`yarn snarkjs groth16 setup ${R1CS}.r1cs ${PTAU}.ptau ${ZKEY}.zkey`;
 
   // contribute to the phase 2 of the ceremony
-  await $`yarn snarkjs zkey contribute ${ZKEY_FILENAME}.zkey ${ZKEY_FINAL_FILENAME}.zkey --name="1st Contribution" -v`;
+  await $`yarn snarkjs zkey contribute ${ZKEY}.zkey ${ZKEY_FINAL}.zkey --name="Contribution" -v`;
+  echo('✅');
+
+  // generate a verifier contract
+  echo(`\nGenerating a verifier contract...`);
+  await $`snarkjs zkey export solidityverifier ../circuits/${ZKEY_FINAL}.zkey ../contracts/circom/verifier.sol`;
+  echo('✅\n');
 })();

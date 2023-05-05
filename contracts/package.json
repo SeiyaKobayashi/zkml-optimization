@@ -16,7 +16,14 @@
     "prettify-sol": "prettier -w src/*.sol src/**/*.sol",
     "prettify-ts": "prettier -w **/*.ts",
     "test": "REPORT_GAS=true hardhat test --typecheck",
-    "coverage": "hardhat coverage"
+    "coverage": "hardhat coverage",
+    "run-hardhat": "hardhat node",
+    "deploy-contracts": "sh -c 'hardhat run --network ${0} scripts/deploy-contracts.ts'",
+    "register-model": "sh -c 'hardhat run --network ${0} scripts/register-model.ts'",
+    "get-models": "sh -c 'hardhat run --network ${0} scripts/get-models.ts'",
+    "commit-merkle-root": "sh -c 'hardhat run --network ${0} scripts/commit-merkle-root.ts'",
+    "get-commitments": "sh -c 'hardhat run --network ${0} scripts/get-commitments.ts'",
+    "send-proofs": "sh -c 'hardhat run --network ${0} scripts/send-proofs.ts'"
   },
   "dependencies": {
     "@openzeppelin/contracts": "4.8.0"

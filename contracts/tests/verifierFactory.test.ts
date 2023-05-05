@@ -11,6 +11,8 @@ describe('Verifier Contract', () => {
   ).toString();
   const testModelName = 'Test Model';
   const testModelDescription = 'Description of test model.';
+  const testCircomVerifierAddress =
+    '0xe7f1725e7734ce288f8367e1bb143e90bb3f0510';
 
   let Verifier: ContractFactory;
   let verifier: Contract;
@@ -23,11 +25,13 @@ describe('Verifier Contract', () => {
     [owner] = await hre.ethers.getSigners();
     ownerAddress = await owner.getAddress();
 
-    Verifier = await hre.ethers.getContractFactory('Verifier');
-    verifier = await Verifier.deploy(difficulty);
+    Verifier = await hre.ethers.getContractFactory('CustomVerifier');
+    verifier = await Verifier.deploy(testCircomVerifierAddress, difficulty);
     await verifier.deployed();
 
-    VerifierFactory = await hre.ethers.getContractFactory('VerifierFactory');
+    VerifierFactory = await hre.ethers.getContractFactory(
+      'CustomVerifierFactory',
+    );
     verifierFactory = await VerifierFactory.deploy(verifier.address);
     await verifierFactory.deployed();
   });

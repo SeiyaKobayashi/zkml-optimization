@@ -17,21 +17,29 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Ownable__factory>;
     getContractFactory(
-      name: "IVerifier",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IVerifier__factory>;
-    getContractFactory(
-      name: "IVerifierFactory",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IVerifierFactory__factory>;
-    getContractFactory(
       name: "Verifier",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Verifier__factory>;
     getContractFactory(
-      name: "VerifierFactory",
+      name: "CustomVerifier",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.VerifierFactory__factory>;
+    ): Promise<Contracts.CustomVerifier__factory>;
+    getContractFactory(
+      name: "CustomVerifierFactory",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.CustomVerifierFactory__factory>;
+    getContractFactory(
+      name: "ICircomVerifier",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ICircomVerifier__factory>;
+    getContractFactory(
+      name: "ICustomVerifier",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ICustomVerifier__factory>;
+    getContractFactory(
+      name: "ICustomVerifierFactory",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ICustomVerifierFactory__factory>;
 
     getContractAt(
       name: "Ownable",
@@ -39,25 +47,35 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.Ownable>;
     getContractAt(
-      name: "IVerifier",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IVerifier>;
-    getContractAt(
-      name: "IVerifierFactory",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IVerifierFactory>;
-    getContractAt(
       name: "Verifier",
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.Verifier>;
     getContractAt(
-      name: "VerifierFactory",
+      name: "CustomVerifier",
       address: string,
       signer?: ethers.Signer
-    ): Promise<Contracts.VerifierFactory>;
+    ): Promise<Contracts.CustomVerifier>;
+    getContractAt(
+      name: "CustomVerifierFactory",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.CustomVerifierFactory>;
+    getContractAt(
+      name: "ICircomVerifier",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ICircomVerifier>;
+    getContractAt(
+      name: "ICustomVerifier",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ICustomVerifier>;
+    getContractAt(
+      name: "ICustomVerifierFactory",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ICustomVerifierFactory>;
 
     // default types
     getContractFactory(
