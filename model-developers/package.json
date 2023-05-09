@@ -1,0 +1,22 @@
+{
+  "name": "model-developers",
+  "version": "1.0.0",
+  "repository": "https://SeiyaKobayashi@github.com/SeiyaKobayashi/zkml-optimization.git",
+  "author": "SeiyaKobayashi <seiya.kobayashi.work@gmail.com>",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "setup-circom": "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh && ts-node ./scripts/setup-circom.ts",
+    "setup-ipfs": "ts-node ./scripts/setup-ipfs.ts",
+    "compile-circuit": "ts-node ./scripts/compile-circuit.ts",
+    "generate-keys": "ts-node ./scripts/generate-keys.ts",
+    "connect-to-ipfs": "ts-node ./scripts/connect-to-ipfs.ts",
+    "upload-to-ipfs": "ts-node ./scripts/upload-to-ipfs.ts"
+  },
+  "devDependencies": {
+    "snarkjs": "0.6.10",
+    "ts-node": "10.9.1",
+    "zx": "7.2.1"
+  }
+}

@@ -1,0 +1,7 @@
+* text=auto
+*.sol linguist-language=Solidity
+*.py linguist-language=Python
+*.ts linguist-language=TypeScript
+*.js linguist-language=JavaScript
+*.yml linguist-language=YAML
+*.md linguist-language=Markdown

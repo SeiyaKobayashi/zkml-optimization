@@ -1,0 +1,11 @@
+/*/
+/*.r1cs
+/*.sym
+/*.gz
+/*.ptau
+/*.zkey
+/proof.json
+/proof-*.json
+/public.json
+/public-*.json
+parameterized-zkps.json

@@ -1,0 +1,12 @@
+{
+  "name": "circuits",
+  "version": "1.0.0",
+  "repository": "https://SeiyaKobayashi@github.com/SeiyaKobayashi/zkml-optimization.git",
+  "author": "SeiyaKobayashi <seiya.kobayashi.work@gmail.com>",
+  "license": "MIT",
+  "private": true,
+  "devDependencies": {
+    "circomlib-ml": "1.4.4",
+    "snarkjs": "0.6.10"
+  }
+}
