@@ -1,0 +1,43 @@
+import * as fs from 'fs';
+import hre from 'hardhat';
+import { ethers } from 'ethers';
+import '@nomicfoundation/hardhat-toolbox';
+
+import { CONTRACT_ADDRESS_CUSTOM_VERIFIER, DEMO_PATH } from './utils/constants';
+
+const MERKLE_TREE: string = process.env.MERKLE_TREE || `${DEMO_PATH}-tree`;
+
+async function main() {
+  try {
+    const provider = new ethers.providers.JsonRpcProvider('<your_rpc_url>');
+    const signer = new ethers.Wallet('<your_private_key>', provider);
+
+    // Initialize CustomVerifier contract
+    console.log('Initializing CustomVerifier contract...');
+    const customVerifier = await hre.ethers.getContractAt('CustomVerifier', CONTRACT_ADDRESS_CUSTOM_VERIFIER, signer);
+
+    // Commit Merkle root
+    console.log('Committing Merkle root...');
+    const merkleRoot = JSON.parse(fs.readFileSync(`../provers/merkle-trees/${MERKLE_TREE}-root.json`).toString()).merkleRoot;
+    await customVerifier.commit(merkleRoot);
+    console.log('Merkle root committed.');
+
+    // Save commitment details as a JSON file
+    console.log("Saving commitment details as './outputs/commitment.json'...");
+    const commitments = await customVerifier.getCommitmentsOfModel(0, 10);
+    const commitment = await customVerifier.getCommitment(commitments[0]);
+    const commitmentDetails = {
+      commitmentId: commitment.id,
+      challenge: commitment.challenge,
+    };
+    fs.writeFileSync(`./outputs/commitment.json`, JSON.stringify(commitmentDetails, null, 2));
+    console.log('Commitment details saved.');
+
+  } catch (error) {
+    console.error('An error occurred:', error);
+  }
+}
+
+main();
+
+ 
